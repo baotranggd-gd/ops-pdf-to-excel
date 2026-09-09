@@ -59,7 +59,7 @@
       <button onclick="switchTab('tab-master')" id="nav-master" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition group cursor-pointer">
         <i data-lucide="database" class="w-4 h-4 text-slate-400 group-hover:text-white"></i>
         <span>Master Product</span>
-        <span class="ml-auto bg-indigo-950 text-indigo-300 text-[10px] font-semibold px-2 py-0.5 rounded-full" id="sidebarMasterCount">382</span>
+        <span class="ml-auto bg-indigo-950 text-indigo-300 text-[10px] font-semibold px-2 py-0.5 rounded-full" id="sidebarMasterCount">16</span>
       </button>
 
       <div class="text-[10px] uppercase font-bold text-slate-400 px-3 pt-5 pb-1 tracking-wider">Hệ thống</div>
@@ -287,9 +287,14 @@
       <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-xl border border-slate-200">
         <div>
           <h3 class="text-sm font-bold text-slate-900">Cơ Sở Dữ Liệu Master Product Database</h3>
-          <p class="text-xs text-slate-500">Danh mục 382 sản phẩm chuẩn tích hợp từ Product List (Barcode, Product Code, Tên SP, Status ON/OFF)</p>
+          <p class="text-xs text-slate-500">Danh mục sản phẩm chuẩn. Hỗ trợ thêm thủ công từng mã hoặc import hàng loạt từ Excel.</p>
         </div>
         <div class="flex items-center gap-2">
+          <!-- Button Add Single Product Manually -->
+          <button onclick="openProductModal('add')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shadow-xs">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i> Thêm Sản Phẩm Mới
+          </button>
+          
           <input type="file" id="masterExcelInput" accept=".xlsx,.csv" class="hidden" />
           <button onclick="document.getElementById('masterExcelInput').click()" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer">
             <i data-lucide="upload" class="w-4 h-4"></i> Import Excel Product List
@@ -302,7 +307,7 @@
 
       <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
         <div class="p-3 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-          <span class="text-xs text-slate-500">Tổng số sản phẩm: <strong class="text-indigo-600" id="masterTableCount">382</strong> SKU</span>
+          <span class="text-xs text-slate-500">Tổng số sản phẩm: <strong class="text-indigo-600" id="masterTableCount">16</strong> SKU</span>
           <input type="text" id="searchMasterInput" onkeyup="filterMasterTable()" placeholder="Tìm theo Barcode, Product Code hoặc Tên..." class="text-xs border border-slate-300 rounded-lg px-2.5 py-1 w-72 bg-white focus:ring-1 focus:ring-indigo-500">
         </div>
         <div class="max-h-[600px] overflow-y-auto">
@@ -313,6 +318,7 @@
                 <th class="px-4 py-2.5 font-mono text-indigo-900">Product Code</th>
                 <th class="px-4 py-2.5">Product Name (Tên Sản Phẩm)</th>
                 <th class="px-4 py-2.5 text-center">Status (Trạng Thái KD)</th>
+                <th class="px-4 py-2.5 text-center">Thao Tác</th>
               </tr>
             </thead>
             <tbody id="fullMasterTableBody" class="divide-y divide-slate-100"></tbody>
@@ -383,46 +389,184 @@
 
   </div>
 
+  <!-- ==================== MODAL ADD / EDIT PRODUCT ==================== -->
+  <div id="productModal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
+            <i data-lucide="package-plus" class="w-4 h-4" id="modalIcon"></i>
+          </div>
+          <h3 class="font-bold text-slate-900 text-base" id="modalProductTitle">Thêm Sản Phẩm Mới</h3>
+        </div>
+        <button onclick="closeProductModal()" class="text-slate-400 hover:text-slate-700 cursor-pointer">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="productForm" onsubmit="handleSaveProduct(event)" class="space-y-3.5 text-xs">
+        <input type="hidden" id="modalProductMode" value="add" />
+        <input type="hidden" id="modalOriginalBarcode" value="" />
+        <input type="hidden" id="modalOriginalProductCode" value="" />
+
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">Mã Barcode (13 số hoặc mã định danh) *</label>
+          <input type="text" id="modalBarcode" required placeholder="Ví dụ: 6977304933225" 
+            class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white font-mono font-semibold focus:ring-1 focus:ring-indigo-500">
+          <p class="text-[11px] text-slate-400 mt-0.5">Không được trùng lặp với Barcode đã có trong hệ thống.</p>
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">Product Code (Mã sản phẩm nội bộ) *</label>
+          <input type="text" id="modalProductCode" required placeholder="Ví dụ: 2C01A381AR666-01" 
+            class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white font-mono font-semibold text-indigo-900 focus:ring-1 focus:ring-indigo-500">
+          <p class="text-[11px] text-slate-400 mt-0.5">Không được trùng lặp với Product Code đã có trong hệ thống.</p>
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">Product Name (Tên sản phẩm chuẩn Master) *</label>
+          <textarea id="modalProductName" required rows="2" placeholder="Ví dụ: Son Kem Lì Mịn Mượt COLORKEY airy velvet lip lacquer R666# 2.5g" 
+            class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white font-medium focus:ring-1 focus:ring-indigo-500"></textarea>
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-700 mb-1">Trạng thái kinh doanh (Status) *</label>
+          <select id="modalProductStatus" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white font-semibold focus:ring-1 focus:ring-indigo-500">
+            <option value="ON">ON - Đang kinh doanh (Tự động duyệt khi bóc tách)</option>
+            <option value="OFF">OFF - Ngừng kinh doanh (Cảnh báo khi bóc tách)</option>
+          </select>
+        </div>
+
+        <div id="modalAlertMsg" class="hidden p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium"></div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+          <button type="button" onclick="closeProductModal()" class="px-3.5 py-2 border border-slate-300 hover:bg-slate-100 text-slate-700 rounded-lg font-medium transition cursor-pointer">Hủy</button>
+          <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold flex items-center gap-1.5 transition cursor-pointer">
+            <i data-lucide="check" class="w-4 h-4"></i> Lưu Sản Phẩm
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- APPLICATION JAVASCRIPT LOGIC -->
   <script>
-    // 1. MASTER PRODUCT DATABASE EMBEDDED FROM PRODUCT LIST.XLSX (382 ITEMS)
+    // 1. MASTER PRODUCT DATABASE PRELOADED (16 CORE ITEMS WITH PRODUCT CODE & STATUS)
     const DEFAULT_MASTER = [
-      {"barcode": "6977304933225", "productCode": "2C01A381AR666-01", "name": "Son Kem Lì Mịn Mượt COLORKEY airy velvet lip lacquer R666# 2.5g", "status": "ON"},
-      {"barcode": "6977304933232", "productCode": "2C01A381AR608-01", "name": "Son Kem Lì Mịn Mượt COLORKEY airy velvet lip lacquer R608# 2.5g", "status": "ON"},
-      {"barcode": "6977304933249", "productCode": "2C01A381AR247-01", "name": "Son Kem Lì Mịn Mượt COLORKEY airy velvet lip lacquer R247# 2.5g", "status": "ON"},
-      {"barcode": "6977304933270", "productCode": "2C01A381AO611-01", "name": "Son Kem Lì Mịn Mượt COLORKEY airy velvet lip lacquer O611# 2.5g", "status": "ON"},
-      {"barcode": "6977304933256", "productCode": "2C01A381AP251-01", "name": "Son Kem Lì Mịn Mượt COLORKEY airy velvet lip lacquer P251# 2.5g", "status": "ON"},
-      {"barcode": "6977304933263", "productCode": "2C01A381AP226-01", "name": "Son Kem Lì Mịn Mượt COLORKEY airy velvet lip lacquer P226# 2.5g", "status": "ON"},
-      {"barcode": "6977304933287", "productCode": "2C01A381AB605-01", "name": "Son Kem Lì Mịn Mượt COLORKEY airy velvet lip lacquer B605# 2.5g", "status": "ON"},
-      {"barcode": "6977304939036", "productCode": "2C01A381AP269-01", "name": "Son Kem Lì Mịn Mượt COLORKEY airy velvet lip lacquer #P269 2.5g", "status": "ON"},
-      {"barcode": "6977304939043", "productCode": "2C01A381AP270-01", "name": "Son Kem Lì Mịn Mượt COLORKEY airy velvet lip lacquer #P270 2.5g", "status": "ON"},
-      {"barcode": "6938582356373", "productCode": "1C01A346AAQ01-01", "name": "SON BÙN ĐA NĂNG DẠNG HŨ COLORKEY Bouncy Creamy Multi-Purpose Mud Q01", "status": "ON"},
-      {"barcode": "6975326789318", "productCode": "2C06E013AAA01-01", "name": "COLORKEY LUMINOUS HYDRATING FACIAL MASK 25mI（越南莹润烟酰胺）", "status": "ON"},
-      {"barcode": "6975326789356", "productCode": "2C06E013AAA02-01", "name": "COLORKEY LUMINOUS NOURISHING FACIAL MASK 25mI（越南沁润金缕梅）", "status": "ON"},
-      {"barcode": "6975326789332", "productCode": "2C06E013AAA03-01", "name": "COLORKEY LUMINOUS REPLENISHING FACIAL MASK 25mI（越南光甘草定）", "status": "ON"},
-      {"barcode": "6975326789400", "productCode": "2C06E014AAA05-01", "name": "Mặt nạ B5 COLORKEY LUMINOUS BRIGHTENING FACIAL MASK 25ml*10pcs（越南恒润雪莲）- LOGO MỚI", "status": "ON"},
-      {"barcode": "6977304932662", "productCode": "2C06E019AAA01-01", "name": "Mặt Nạ Cấp Ẩm Và Sáng Da B3 COLORKEY LUMINOUS B3 Brightening & Hydrating Facial Mask 30ml", "status": "ON"},
-      {"barcode": "6977304932679", "productCode": "2C06E019AAA02-01", "name": "Mặt Nạ Se Khít Lỗ Chân Lông Và Sáng Da B3 COLORKEY LUMINOUS B3 Brightening & Pore Minimizing Facial Mask 30ml", "status": "ON"},
-      {"barcode": "6977304932631", "productCode": "2C06E020AAA03-01", "name": "Mặt Nạ Phục Hồi Và Sáng Da B3 COLORKEY LUMINOUS B3 Brightening & Repairing Facial Mask 30ml*10ml - LOGO MỚI", "status": "ON"},
-      {"barcode": "6977304932693", "productCode": "2C06E019AAA04-01", "name": "Mặt Nạ Săn Chắc Và Sáng Da B3 COLORKEY LUMINOUS B3 Brightening & Firming Facial Mask 30ml", "status": "ON"},
-      {"barcode": "6977304932709", "productCode": "2C06E019AAA05-01", "name": "Mặt Nạ Dưỡng Ẩm Và Sáng Da B3 COLORKEY LUMINOUS B3 Brightening & Nourishing Facial Mask 30ml", "status": "ON"},
-      {"barcode": "6977304934970", "productCode": "2C09B001AAAAA-01", "name": "SỮA DƯỠNG THỂ SÁNG DA COLORKEY ROSÉ Rosé Crush Perfumed Brightening Body Lotion 200g", "status": "ON"},
-      {"barcode": "6977304935663", "productCode": "2C06E043AAAAA-01", "name": "MẶT NẠ COLORKEY LUMINOUS Blueberry Pdrn Drink Up Facial Mask 25ml*10", "status": "ON"},
-      {"barcode": "6977304935670", "productCode": "2C06E042AAAAA-01", "name": "MẶT NẠ 25ML COLORKEY LUMINOUS Blueberry Pdrn Drink Up Facial Mask 25ml", "status": "ON"},
-      {"barcode": "6977304935649", "productCode": "2C06E044AAAAA-01", "name": "MẶT NẠ 25ML COLORKEY LUMINOUS Rice Pdrn Tone Up Facial Mask 25ml", "status": "ON"},
-      {"barcode": "6977304935625", "productCode": "2C06E048AAAAA-01", "name": "MẶT NẠ 25ML COLORKEY LUMINOUS Pomegranate Pdrn Glow-Boosting Facial Mask 25ml", "status": "ON"},
-      {"barcode": "6977304935618", "productCode": "2C06E046AAAAA-01", "name": "MẶT NẠ 25ML COLORKEY LUMINOUS Algae Pdrn Youth-Boosting Facial Mask 25ml", "status": "ON"},
-      {"barcode": "6977304930651", "productCode": "2C06E015AAAAA-01", "name": "MẶT NẠ COLORKEY LUMINOUS PURIFYING FACIAL MASK 25ml", "status": "OFF"}
+      {
+        "barcode": "6977304935663",
+        "productCode": "2C06E043AAAAA-01",
+        "name": "MẶT NẠ COLORKEY LUMINOUS Blueberry Pdrn Drink Up Facial Mask 25ml*10",
+        "status": "ON"
+      },
+      {
+        "barcode": "6975326789318",
+        "productCode": "2C06E013AAA01-01",
+        "name": "COLORKEY LUMINOUS HYDRATING FACIAL MASK 25mI（越南莹润烟酰胺）",
+        "status": "ON"
+      },
+      {
+        "barcode": "6975326789356",
+        "productCode": "2C06E013AAA02-01",
+        "name": "COLORKEY LUMINOUS NOURISHING FACIAL MASK 25mI（越南沁润金缕梅）",
+        "status": "ON"
+      },
+      {
+        "barcode": "6975326789332",
+        "productCode": "2C06E013AAA03-01",
+        "name": "COLORKEY LUMINOUS REPLENISHING FACIAL MASK 25mI（越南光甘草定）",
+        "status": "ON"
+      },
+      {
+        "barcode": "6975326789400",
+        "productCode": "2C06E014AAA05-01",
+        "name": "Mặt nạ B5 COLORKEY LUMINOUS BRIGHTENING FACIAL MASK 25ml*10pcs（越南恒润雪莲）- LOGO MỚI",
+        "status": "ON"
+      },
+      {
+        "barcode": "6977304930651",
+        "productCode": "2C06E015AAAAA-01",
+        "name": "MẶT NẠ COLORKEY LUMINOUS PURIFYING FACIAL MASK 25ml",
+        "status": "OFF"
+      },
+      {
+        "barcode": "6977304932662",
+        "productCode": "2C06E019AAA01-01",
+        "name": "Mặt Nạ Cấp Ẩm Và Sáng Da B3 COLORKEY LUMINOUS B3 Brightening & Hydrating Facial Mask 30ml",
+        "status": "ON"
+      },
+      {
+        "barcode": "6977304932679",
+        "productCode": "2C06E019AAA02-01",
+        "name": "Mặt Nạ Se Khít Lỗ Chân Lông Và Sáng Da B3 COLORKEY LUMINOUS B3 Brightening & Pore Minimizing Facial Mask 30ml",
+        "status": "ON"
+      },
+      {
+        "barcode": "6977304932631",
+        "productCode": "2C06E020AAA03-01",
+        "name": "Mặt Nạ Phục Hồi Và Sáng Da B3 COLORKEY LUMINOUS B3 Brightening & Repairing Facial Mask 30ml*10ml - LOGO MỚI",
+        "status": "ON"
+      },
+      {
+        "barcode": "6977304932693",
+        "productCode": "2C06E019AAA04-01",
+        "name": "Mặt Nạ Săn Chắc Và Sáng Da B3 COLORKEY LUMINOUS B3 Brightening & Firming Facial Mask 30ml",
+        "status": "ON"
+      },
+      {
+        "barcode": "6977304932709",
+        "productCode": "2C06E019AAA05-01",
+        "name": "Mặt Nạ Dưỡng Ẩm Và Sáng Da B3 COLORKEY LUMINOUS B3 Brightening & Nourishing Facial Mask 30ml",
+        "status": "ON"
+      },
+      {
+        "barcode": "6977304935670",
+        "productCode": "2C06E042AAAAA-01",
+        "name": "MẶT NẠ 25ML COLORKEY LUMINOUS Blueberry Pdrn Drink Up Facial Mask 25ml",
+        "status": "ON"
+      },
+      {
+        "barcode": "6977304935649",
+        "productCode": "2C06E044AAAAA-01",
+        "name": "MẶT NẠ 25ML COLORKEY LUMINOUS Rice Pdrn Tone Up Facial Mask 25ml",
+        "status": "ON"
+      },
+      {
+        "barcode": "6977304935625",
+        "productCode": "2C06E048AAAAA-01",
+        "name": "MẶT NẠ 25ML COLORKEY LUMINOUS Pomegranate Pdrn Glow-Boosting Facial Mask 25ml",
+        "status": "ON"
+      },
+      {
+        "barcode": "6977304935618",
+        "productCode": "2C06E046AAAAA-01",
+        "name": "MẶT NẠ 25ML COLORKEY LUMINOUS Algae Pdrn Youth-Boosting Facial Mask 25ml",
+        "status": "ON"
+      },
+      {
+        "barcode": "6977304934970",
+        "productCode": "2C09B001AAAAA-01",
+        "name": "SỮA DƯỠNG THỂ SÁNG DA COLORKEY ROSÉ Rosé Crush Perfumed Brightening Body Lotion 200g",
+        "status": "ON"
+      }
     ];
 
     let MASTER_PRODUCTS = DEFAULT_MASTER;
     try {
-      const stored = localStorage.getItem('MASTER_PRODUCTS_V4');
+      const stored = localStorage.getItem('MASTER_PRODUCTS_V5');
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) MASTER_PRODUCTS = parsed;
       }
     } catch(e) {}
+
+    function persistMasterProducts() {
+      try {
+        localStorage.setItem('MASTER_PRODUCTS_V5', JSON.stringify(MASTER_PRODUCTS));
+      } catch(e) {
+        console.warn("Storage quota exceeded or disabled", e);
+      }
+    }
 
     let CUSTOMERS = [
       { code: "CUST_WATSONS", name: "CÔNG TY TNHH WATSONS (VIỆT NAM)", address: "Tầng 2, S71, Aeon Tân Phú, 30 Bờ Bao Tân Thắng, P. Tây Thạnh, TP. HCM", poFormat: "Watsons Standard PDF" },
@@ -462,7 +606,7 @@
       } else if (tabId === 'tab-master') {
         document.getElementById('nav-master').classList.add('nav-active');
         document.getElementById('pageTitle').innerText = "Cơ Sở Dữ Liệu Master Product Database";
-        document.getElementById('pageSubtitle').innerText = "Danh mục 382 sản phẩm chuẩn tích hợp từ Product List";
+        document.getElementById('pageSubtitle').innerText = "Quản lý sản phẩm chuẩn. Thêm thủ công, chỉnh sửa hoặc xóa mã.";
         renderFullMasterTable();
       } else if (tabId === 'tab-settings') {
         document.getElementById('nav-settings').classList.add('nav-active');
@@ -473,7 +617,115 @@
       if (window.lucide) lucide.createIcons();
     }
 
-    // 3. RENDERERS
+    // 3. MASTER PRODUCT CRUD OPERATIONS
+    function openProductModal(mode = 'add', barcode = null) {
+      const modal = document.getElementById('productModal');
+      const titleEl = document.getElementById('modalProductTitle');
+      const modeEl = document.getElementById('modalProductMode');
+      const origBcEl = document.getElementById('modalOriginalBarcode');
+      const origPcEl = document.getElementById('modalOriginalProductCode');
+      const alertEl = document.getElementById('modalAlertMsg');
+      alertEl.classList.add('hidden');
+      alertEl.innerText = '';
+
+      modeEl.value = mode;
+
+      if (mode === 'add') {
+        titleEl.innerText = "Thêm Sản Phẩm Mới Vào Master Database";
+        origBcEl.value = "";
+        origPcEl.value = "";
+        document.getElementById('modalBarcode').value = "";
+        document.getElementById('modalProductCode').value = "";
+        document.getElementById('modalProductName').value = "";
+        document.getElementById('modalProductStatus').value = "ON";
+      } else if (mode === 'edit') {
+        titleEl.innerText = "Chỉnh Sửa Thông Tin Sản Phẩm Master";
+        const item = MASTER_PRODUCTS.find(p => p.barcode === barcode);
+        if (!item) return;
+
+        origBcEl.value = item.barcode;
+        origPcEl.value = item.productCode || "";
+        document.getElementById('modalBarcode').value = item.barcode;
+        document.getElementById('modalProductCode').value = item.productCode || "";
+        document.getElementById('modalProductName').value = item.name || "";
+        document.getElementById('modalProductStatus').value = (item.status || 'ON').toUpperCase();
+      }
+
+      modal.classList.remove('hidden');
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeProductModal() {
+      document.getElementById('productModal').classList.add('hidden');
+    }
+
+    function handleSaveProduct(e) {
+      e.preventDefault();
+      const mode = document.getElementById('modalProductMode').value;
+      const origBarcode = document.getElementById('modalOriginalBarcode').value.trim();
+      const barcode = document.getElementById('modalBarcode').value.trim();
+      const productCode = document.getElementById('modalProductCode').value.trim();
+      const name = document.getElementById('modalProductName').value.trim();
+      const status = document.getElementById('modalProductStatus').value.trim().toUpperCase();
+      const alertEl = document.getElementById('modalAlertMsg');
+
+      // Rule: Check duplicates for Barcode AND Product Code
+      const dupBarcode = MASTER_PRODUCTS.find(p => p.barcode === barcode && (mode === 'add' || p.barcode !== origBarcode));
+      if (dupBarcode) {
+        alertEl.innerText = `LỖI: Mã Barcode "${barcode}" đã tồn tại trong Master Database (Sản phẩm: "${dupBarcode.name}"). Không thể thêm trùng!`;
+        alertEl.classList.remove('hidden');
+        return;
+      }
+
+      const dupProductCode = MASTER_PRODUCTS.find(p => (p.productCode || '').toUpperCase() === productCode.toUpperCase() && (mode === 'add' || p.barcode !== origBarcode));
+      if (dupProductCode) {
+        alertEl.innerText = `LỖI: Mã Product Code "${productCode}" đã tồn tại trong Master Database (Sản phẩm: "${dupProductCode.name}"). Không thể thêm trùng!`;
+        alertEl.classList.remove('hidden');
+        return;
+      }
+
+      if (mode === 'add') {
+        MASTER_PRODUCTS.unshift({
+          barcode: barcode,
+          productCode: productCode,
+          name: name,
+          status: status
+        });
+        alert(`Đã thêm thành công sản phẩm mới:\n- Barcode: ${barcode}\n- Product Code: ${productCode}\n- Tên: ${name}`);
+      } else if (mode === 'edit') {
+        const itemIndex = MASTER_PRODUCTS.findIndex(p => p.barcode === origBarcode);
+        if (itemIndex !== -1) {
+          MASTER_PRODUCTS[itemIndex] = {
+            barcode: barcode,
+            productCode: productCode,
+            name: name,
+            status: status
+          };
+          alert(`Đã cập nhật thành công sản phẩm [${barcode}]!`);
+        }
+      }
+
+      persistMasterProducts();
+      closeProductModal();
+      renderFullMasterTable();
+      renderValidationTable();
+    }
+
+    function deleteProduct(barcode) {
+      const item = MASTER_PRODUCTS.find(p => p.barcode === barcode);
+      if (!item) return;
+
+      const confirmDelete = confirm(`Bạn có chắc chắn muốn XÓA sản phẩm này khỏi Master Database không?\n\n- Barcode: ${item.barcode}\n- Product Code: ${item.productCode || 'N/A'}\n- Tên: ${item.name}`);
+      if (!confirmDelete) return;
+
+      MASTER_PRODUCTS = MASTER_PRODUCTS.filter(p => p.barcode !== barcode);
+      persistMasterProducts();
+      renderFullMasterTable();
+      renderValidationTable();
+      alert(`Đã xóa thành công sản phẩm [${barcode}]!`);
+    }
+
+    // 4. RENDERERS
     function renderCustomerTable() {
       const tbody = document.getElementById('customerTableBody');
       tbody.innerHTML = CUSTOMERS.map(c => `
@@ -502,11 +754,22 @@
               ${isOff ? 'OFF (Ngừng KD)' : 'ON (Kinh doanh)'}
             </span>
           </td>
+          <td class="px-4 py-2 text-center">
+            <div class="flex items-center justify-center gap-1.5">
+              <button onclick="openProductModal('edit', '${p.barcode}')" class="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition cursor-pointer" title="Chỉnh sửa sản phẩm">
+                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+              </button>
+              <button onclick="deleteProduct('${p.barcode}')" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition cursor-pointer" title="Xóa sản phẩm">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </td>
         </tr>
         `;
       }).join('');
       document.getElementById('masterTableCount').innerText = MASTER_PRODUCTS.length;
       document.getElementById('sidebarMasterCount').innerText = MASTER_PRODUCTS.length;
+      if (window.lucide) lucide.createIcons();
     }
 
     function filterMasterTable() {
@@ -555,7 +818,7 @@
       renderCustomerTable();
     }
 
-    // 4. MAPPING LOGIC (STATUS ON / OFF)
+    // 5. MAPPING LOGIC (STATUS ON / OFF)
     function getSimilarity(s1, s2) {
       s1 = (s1 || "").toUpperCase().replace(/[\s-_]/g, '');
       s2 = (s2 || "").toUpperCase().replace(/[\s-_]/g, '');
@@ -726,7 +989,7 @@
       });
     });
 
-    // 5. GLOBAL MULTI-PAGE PDF SCANNER
+    // 6. GLOBAL MULTI-PAGE PDF SCANNER
     function parsePdfContent(fullText, fileName) {
       const poNoMatch = fullText.match(/PO\s*(?:No|Number|#)[\s.:]*([0-9]{8,15})/i);
       const expiredMatch = fullText.match(/Expired\s*Date[\s.:]*([0-9]{2,4}[-/.][0-9]{2}[-/.][0-9]{2,4})/i) || 
@@ -967,14 +1230,15 @@
         const firstSheet = workbook.SheetNames[0];
         const json = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
         
-        MASTER_PRODUCTS = json.map(r => ({
+        const importedList = json.map(r => ({
           barcode: String(r["Barcode"] || r["Bar code"] || r["Mã Barcode"] || "").trim(),
           productCode: String(r["Product Code"] || r["Mã SP"] || r["Mã sản phẩm"] || "").trim(),
           name: String(r["Product Name"] || r["Package Name"] || r["Tên sản phẩm"] || "").trim(),
           status: String(r["Status"] || r["Trạng thái"] || "ON").trim().toUpperCase()
         })).filter(r => r.barcode);
 
-        localStorage.setItem('MASTER_PRODUCTS_V4', JSON.stringify(MASTER_PRODUCTS));
+        MASTER_PRODUCTS = importedList;
+        persistMasterProducts();
         renderFullMasterTable();
         alert(`Đã nạp thành công ${MASTER_PRODUCTS.length} sản phẩm từ file Product List!`);
       };
@@ -982,9 +1246,9 @@
     });
 
     document.getElementById("btnResetMaster").addEventListener("click", () => {
-      if (confirm("Khôi phục lại danh mục Master Product List 382 sản phẩm mặc định?")) {
+      if (confirm("Khôi phục lại danh mục Master mặc định?")) {
         MASTER_PRODUCTS = DEFAULT_MASTER;
-        localStorage.removeItem('MASTER_PRODUCTS_V4');
+        localStorage.removeItem('MASTER_PRODUCTS_V5');
         renderFullMasterTable();
       }
     });
