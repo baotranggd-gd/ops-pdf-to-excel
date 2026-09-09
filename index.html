@@ -20,7 +20,8 @@
     .badge-matched { background-color: #DEF7EC; color: #03543F; }
     .badge-potential { background-color: #FEF08A; color: #854D0E; }
     .badge-notfound { background-color: #FEE2E2; color: #991B1B; }
-    .badge-inactive { background-color: #F3F4F6; color: #4B5563; }
+    .badge-inactive { background-color: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5; }
+    .badge-duplicate { background-color: #EDE9FE; color: #5B21B6; }
     .nav-active { background-color: #4F46E5; color: #FFFFFF !important; }
     .nav-active i { color: #FFFFFF !important; }
   </style>
@@ -44,26 +45,26 @@
     <nav class="flex-1 p-3 space-y-1.5 text-xs font-medium">
       <div class="text-[10px] uppercase font-bold text-slate-400 px-3 pt-3 pb-1 tracking-wider">Nghiệp vụ Ops</div>
       
-      <button onclick="switchTab('tab-converter')" id="nav-converter" class="nav-active w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition group">
+      <button onclick="switchTab('tab-converter')" id="nav-converter" class="nav-active w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition group cursor-pointer">
         <i data-lucide="file-text" class="w-4 h-4 text-slate-400 group-hover:text-white"></i>
         <span>Xử lý Đơn hàng (PO)</span>
       </button>
 
-      <button onclick="switchTab('tab-customers')" id="nav-customers" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition group">
+      <button onclick="switchTab('tab-customers')" id="nav-customers" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition group cursor-pointer">
         <i data-lucide="users" class="w-4 h-4 text-slate-400 group-hover:text-white"></i>
         <span>Khách hàng</span>
         <span class="ml-auto bg-slate-800 text-slate-300 text-[10px] font-semibold px-2 py-0.5 rounded-full" id="sidebarCustCount">3</span>
       </button>
 
-      <button onclick="switchTab('tab-master')" id="nav-master" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition group">
+      <button onclick="switchTab('tab-master')" id="nav-master" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition group cursor-pointer">
         <i data-lucide="database" class="w-4 h-4 text-slate-400 group-hover:text-white"></i>
         <span>Master Product</span>
-        <span class="ml-auto bg-indigo-950 text-indigo-300 text-[10px] font-semibold px-2 py-0.5 rounded-full" id="sidebarMasterCount">16</span>
+        <span class="ml-auto bg-indigo-950 text-indigo-300 text-[10px] font-semibold px-2 py-0.5 rounded-full" id="sidebarMasterCount">382</span>
       </button>
 
       <div class="text-[10px] uppercase font-bold text-slate-400 px-3 pt-5 pb-1 tracking-wider">Hệ thống</div>
 
-      <button onclick="switchTab('tab-settings')" id="nav-settings" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition group">
+      <button onclick="switchTab('tab-settings')" id="nav-settings" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition group cursor-pointer">
         <i data-lucide="settings" class="w-4 h-4 text-slate-400 group-hover:text-white"></i>
         <span>Setting & Tài khoản</span>
       </button>
@@ -90,7 +91,7 @@
     <header class="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between sticky top-0 z-20 shadow-xs">
       <div>
         <h2 id="pageTitle" class="text-base font-bold text-slate-900">Bóc Tách File PDF Đơn Hàng Sang Order Form</h2>
-        <p class="text-xs text-slate-500" id="pageSubtitle">Tự động nhận diện định dạng PO, trích xuất Barcode và mapping dữ liệu chuẩn</p>
+        <p class="text-xs text-slate-500" id="pageSubtitle">Tự động nhận diện Barcode, Product Code và mapping Order Form chuẩn</p>
       </div>
       <div class="flex items-center gap-3">
         <span class="text-xs bg-slate-100 text-slate-600 px-3 py-1.5 rounded-lg font-medium border border-slate-200 flex items-center gap-1.5">
@@ -100,7 +101,7 @@
       </div>
     </header>
 
-    <!-- TAB 1: PDF CONVERTER (CHỨC NĂNG CHÍNH) -->
+    <!-- TAB 1: PDF CONVERTER -->
     <section id="tab-converter" class="p-6 space-y-5">
       <!-- KPI Stats Cards -->
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
@@ -117,14 +118,14 @@
           <div class="text-[11px] text-slate-400 mt-0.5">Từ các file PDF vừa đọc</div>
         </div>
         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
-          <div class="text-xs font-medium text-slate-500">Đã Auto-Match hợp lệ</div>
+          <div class="text-xs font-medium text-slate-500">Đã Auto-Match (ON)</div>
           <div class="text-2xl font-bold text-emerald-600 mt-1" id="statMatched">0</div>
-          <div class="text-[11px] text-slate-400 mt-0.5">Khớp 100% Barcode Master</div>
+          <div class="text-[11px] text-slate-400 mt-0.5">Khớp Master & Đang kinh doanh</div>
         </div>
         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
           <div class="text-xs font-medium text-slate-500">Cần Ops Kiểm tra</div>
           <div class="text-2xl font-bold text-amber-500 mt-1" id="statNeedReview">0</div>
-          <div class="text-[11px] text-slate-400 mt-0.5">Lỗi OCR / Hết hàng / Chưa có mã</div>
+          <div class="text-[11px] text-slate-400 mt-0.5">Ngừng KD (OFF) / Lỗi OCR / Chưa có mã</div>
         </div>
       </div>
 
@@ -181,15 +182,15 @@
         <div class="p-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 bg-white">
           <div>
             <h3 class="text-sm font-semibold text-slate-900">2. Kết Quả Bóc Tách & Mapping Order Form</h3>
-            <p class="text-xs text-slate-500">Kiểm tra thông tin Barcode, Package Name Master và số lượng trước khi xuất file.</p>
+            <p class="text-xs text-slate-500">Kiểm tra thông tin Barcode, Product Code, Package Name và số lượng trước khi xuất file.</p>
           </div>
           <div class="flex items-center gap-2.5">
             <select id="filterStatus" class="text-xs border border-slate-300 rounded-lg px-2.5 py-2 bg-white text-slate-700">
               <option value="ALL">Tất cả trạng thái</option>
-              <option value="Matched">Đã khớp (Matched)</option>
+              <option value="Matched (ON)">Kinh doanh (ON)</option>
+              <option value="Ngừng KD (OFF)">Ngừng kinh doanh (OFF)</option>
               <option value="Potential Match">Cần duyệt OCR (Potential Match)</option>
               <option value="Not Found">Chưa có mã (Not Found)</option>
-              <option value="Hết hàng / Inactive">Hết hàng / Inactive</option>
             </select>
             <button id="btnExportOrderForm" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs sm:text-sm font-semibold shadow-xs flex items-center gap-2 transition cursor-pointer">
               <i data-lucide="download" class="w-4 h-4"></i>
@@ -204,6 +205,7 @@
               <tr>
                 <th class="px-3.5 py-2.5">STT</th>
                 <th class="px-3.5 py-2.5">Bar code (Mã vạch)</th>
+                <th class="px-3.5 py-2.5">Product Code (Mã SP)</th>
                 <th class="px-3.5 py-2.5">Package Name (Tên Master)</th>
                 <th class="px-3.5 py-2.5 text-center">Quantity (下单数量)</th>
                 <th class="px-3.5 py-2.5 text-right">Amount ($ / VND)</th>
@@ -218,7 +220,7 @@
         <div class="bg-slate-50 px-4 py-3 border-t border-slate-200 flex flex-wrap items-center justify-between text-xs text-slate-500 gap-2">
           <div class="flex items-center gap-1.5">
             <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i>
-            <span>Quy tắc xuất đơn: Chỉ các mã <strong>Matched</strong> hợp lệ mới được đưa vào file Order Form tiêu chuẩn.</span>
+            <span>Quy tắc xuất đơn: Các mã trạng thái <strong>Ngừng KD (OFF)</strong> sẽ được cảnh báo để Ops kiểm tra trước khi tạo Order Form.</span>
           </div>
           <button id="btnApproveAllPotential" class="text-indigo-600 hover:text-indigo-800 font-semibold cursor-pointer">Duyệt nhanh tất cả gợi ý OCR</button>
         </div>
@@ -259,7 +261,7 @@
           <h3 class="text-sm font-bold text-slate-900">Danh Sách Đối Tác & Khách Hàng</h3>
           <p class="text-xs text-slate-500">Quản lý cấu hình đọc biểu mẫu PO riêng biệt theo từng chuỗi bán lẻ</p>
         </div>
-        <button onclick="openAddCustomerModal()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
+        <button onclick="openAddCustomerModal()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer">
           <i data-lucide="plus" class="w-4 h-4"></i> Thêm Khách Hàng Mới
         </button>
       </div>
@@ -275,9 +277,7 @@
               <th class="px-4 py-3 text-center">Trạng Thái</th>
             </tr>
           </thead>
-          <tbody id="customerTableBody" class="divide-y divide-slate-100">
-            <!-- Rendered by JS -->
-          </tbody>
+          <tbody id="customerTableBody" class="divide-y divide-slate-100"></tbody>
         </table>
       </div>
     </section>
@@ -287,14 +287,14 @@
       <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-xl border border-slate-200">
         <div>
           <h3 class="text-sm font-bold text-slate-900">Cơ Sở Dữ Liệu Master Product Database</h3>
-          <p class="text-xs text-slate-500">Danh mục Barcode/SKU chuẩn dùng để đối chiếu mã trích xuất từ PDF</p>
+          <p class="text-xs text-slate-500">Danh mục 382 sản phẩm chuẩn tích hợp từ Product List (Barcode, Product Code, Tên SP, Status ON/OFF)</p>
         </div>
         <div class="flex items-center gap-2">
           <input type="file" id="masterExcelInput" accept=".xlsx,.csv" class="hidden" />
-          <button onclick="document.getElementById('masterExcelInput').click()" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
-            <i data-lucide="upload" class="w-4 h-4"></i> Import Excel Master
+          <button onclick="document.getElementById('masterExcelInput').click()" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer">
+            <i data-lucide="upload" class="w-4 h-4"></i> Import Excel Product List
           </button>
-          <button id="btnResetMaster" class="px-3 py-1.5 text-xs text-rose-600 hover:bg-rose-50 rounded-lg font-medium border border-rose-200 transition">
+          <button id="btnResetMaster" class="px-3 py-1.5 text-xs text-rose-600 hover:bg-rose-50 rounded-lg font-medium border border-rose-200 transition cursor-pointer">
             Khôi phục mặc định
           </button>
         </div>
@@ -302,16 +302,17 @@
 
       <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
         <div class="p-3 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-          <span class="text-xs text-slate-500">Tổng số sản phẩm: <strong class="text-indigo-600" id="masterTableCount">16</strong> SKU</span>
-          <input type="text" id="searchMasterInput" onkeyup="filterMasterTable()" placeholder="Tìm theo Barcode hoặc tên..." class="text-xs border border-slate-300 rounded-lg px-2.5 py-1 w-64 bg-white focus:ring-1 focus:ring-indigo-500">
+          <span class="text-xs text-slate-500">Tổng số sản phẩm: <strong class="text-indigo-600" id="masterTableCount">382</strong> SKU</span>
+          <input type="text" id="searchMasterInput" onkeyup="filterMasterTable()" placeholder="Tìm theo Barcode, Product Code hoặc Tên..." class="text-xs border border-slate-300 rounded-lg px-2.5 py-1 w-72 bg-white focus:ring-1 focus:ring-indigo-500">
         </div>
         <div class="max-h-[600px] overflow-y-auto">
           <table class="w-full text-left text-xs text-slate-600">
-            <thead class="bg-slate-50 uppercase font-semibold text-slate-500 border-b border-slate-200 text-[11px] sticky top-0">
+            <thead class="bg-slate-50 uppercase font-semibold text-slate-500 border-b border-slate-200 text-[11px] sticky top-0 shadow-xs">
               <tr>
-                <th class="px-4 py-2.5 font-mono">Barcode (Mã Vạch)</th>
-                <th class="px-4 py-2.5">Package Name Chuẩn (Master)</th>
-                <th class="px-4 py-2.5 text-center">Trạng Thái Kinh Doanh</th>
+                <th class="px-4 py-2.5 font-mono">Barcode</th>
+                <th class="px-4 py-2.5 font-mono text-indigo-900">Product Code</th>
+                <th class="px-4 py-2.5">Product Name (Tên Sản Phẩm)</th>
+                <th class="px-4 py-2.5 text-center">Status (Trạng Thái KD)</th>
               </tr>
             </thead>
             <tbody id="fullMasterTableBody" class="divide-y divide-slate-100"></tbody>
@@ -322,7 +323,6 @@
 
     <!-- TAB 4: SETTING & ACCOUNT -->
     <section id="tab-settings" class="p-6 space-y-6 hidden max-w-5xl">
-      <!-- Create Account Card -->
       <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs space-y-4">
         <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
           <div>
@@ -354,14 +354,13 @@
             </select>
           </div>
           <div class="sm:col-span-2 flex justify-end pt-2">
-            <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
+            <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer">
               <i data-lucide="user-plus" class="w-4 h-4"></i> Tạo Tài Khoản
             </button>
           </div>
         </form>
       </div>
 
-      <!-- Account List Table -->
       <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
         <div class="p-4 border-b border-slate-100 flex items-center justify-between">
           <h4 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Danh Sách Tài Khoản Trong Hệ Thống</h4>
@@ -386,30 +385,43 @@
 
   <!-- APPLICATION JAVASCRIPT LOGIC -->
   <script>
-    // 1. STATE & DATABASES
+    // 1. MASTER PRODUCT DATABASE EMBEDDED FROM PRODUCT LIST.XLSX (382 ITEMS)
     const DEFAULT_MASTER = [
-      { barcode: "6977304935663", name: "COLORKEY LUMINOUS BLUEBERRY PDRN DRINK UP FACIAL MASK 25ml*10", status: "Active" },
-      { barcode: "6975326789318", name: "COLORKEY LUMINOUS HYDRATING FACIAL MASK 25mI（NEW）", status: "Active" },
-      { barcode: "6975326789356", name: "COLORKEY LUMINOUS NOURISHING FACIAL MASK 25mI（NEW）", status: "Active" },
-      { barcode: "6975326789332", name: "COLORKEY LUMINOUS REPLENISHING FACIAL MASK 25mI（NEW）", status: "Active" },
-      { barcode: "6975326789400", name: "COLORKEY LUMINOUS BRIGHTENING FACIAL MASK 25ml*10pcs（越南恒润雪莲）", status: "Active" },
-      { barcode: "6977304930651", name: "MẶT NẠ COLORKEY LUMINOUS PURIFYING FACIAL MASK 25ml Hết hàng", status: "Hết hàng / Inactive" },
-      { barcode: "6977304932662", name: "Mặt Nạ Cấp Ẩm Và Sáng Da B3 COLORKEY LUMINOUS B3 Brightening & Hydrating Facial Mask 30ml", status: "Active" },
-      { barcode: "6977304932679", name: "Mặt Nạ Se Khít Lỗ Chân Lông Và Sáng Da B3 COLORKEY LUMINOUS B3 Brightening & Pore Minimizing Facial Mask 30ml", status: "Active" },
-      { barcode: "6977304932631", name: "Mặt Nạ Phục Hồi Và Sáng Da B3 COLORKEY LUMINOUS B3 Brightening & Repairing Facial Mask 30ml*10ml", status: "Active" },
-      { barcode: "6977304932693", name: "Mặt Nạ Săn Chắc Và Sáng Da B3 COLORKEY LUMINOUS B3 Brightening & Firming Facial Mask 30ml", status: "Active" },
-      { barcode: "6977304932709", name: "Mặt Nạ Dưỡng Ẩm Và Sáng Da B3 COLORKEY LUMINOUS B3 Brightening & Nourishing Facial Mask 30ml", status: "Active" },
-      { barcode: "6977304935670", name: "COLORKEY LUMINOUS BLUEBERRY PDRN DRINK UP FACIAL MASK 25ml", status: "Active" },
-      { barcode: "6977304935649", name: "COLORKEY LUMINOUS RICE PDRN TONE UP FACIAL MASK 25ml", status: "Active" },
-      { barcode: "6977304935625", name: "COLORKEY LUMINOUS POMEGRANATE PDRN GLOW-BOOSTING FACIAL MASK 25ml", status: "Active" },
-      { barcode: "6977304935618", name: "COLORKEY LUMINOUS ALGAE PDRN YOUTH-BOOSTING FACIAL MASK 25ml", status: "Active" },
-      { barcode: "6977304934970", name: "SỮA DƯỠNG THỂ SÁNG DA COLORKEY ROSÉ Rosé Crush Perfumed Brightening Body Lotion 200g", status: "Active" }
+      {"barcode": "6977304933225", "productCode": "2C01A381AR666-01", "name": "Son Kem Lì Mịn Mượt COLORKEY airy velvet lip lacquer R666# 2.5g", "status": "ON"},
+      {"barcode": "6977304933232", "productCode": "2C01A381AR608-01", "name": "Son Kem Lì Mịn Mượt COLORKEY airy velvet lip lacquer R608# 2.5g", "status": "ON"},
+      {"barcode": "6977304933249", "productCode": "2C01A381AR247-01", "name": "Son Kem Lì Mịn Mượt COLORKEY airy velvet lip lacquer R247# 2.5g", "status": "ON"},
+      {"barcode": "6977304933270", "productCode": "2C01A381AO611-01", "name": "Son Kem Lì Mịn Mượt COLORKEY airy velvet lip lacquer O611# 2.5g", "status": "ON"},
+      {"barcode": "6977304933256", "productCode": "2C01A381AP251-01", "name": "Son Kem Lì Mịn Mượt COLORKEY airy velvet lip lacquer P251# 2.5g", "status": "ON"},
+      {"barcode": "6977304933263", "productCode": "2C01A381AP226-01", "name": "Son Kem Lì Mịn Mượt COLORKEY airy velvet lip lacquer P226# 2.5g", "status": "ON"},
+      {"barcode": "6977304933287", "productCode": "2C01A381AB605-01", "name": "Son Kem Lì Mịn Mượt COLORKEY airy velvet lip lacquer B605# 2.5g", "status": "ON"},
+      {"barcode": "6977304939036", "productCode": "2C01A381AP269-01", "name": "Son Kem Lì Mịn Mượt COLORKEY airy velvet lip lacquer #P269 2.5g", "status": "ON"},
+      {"barcode": "6977304939043", "productCode": "2C01A381AP270-01", "name": "Son Kem Lì Mịn Mượt COLORKEY airy velvet lip lacquer #P270 2.5g", "status": "ON"},
+      {"barcode": "6938582356373", "productCode": "1C01A346AAQ01-01", "name": "SON BÙN ĐA NĂNG DẠNG HŨ COLORKEY Bouncy Creamy Multi-Purpose Mud Q01", "status": "ON"},
+      {"barcode": "6975326789318", "productCode": "2C06E013AAA01-01", "name": "COLORKEY LUMINOUS HYDRATING FACIAL MASK 25mI（越南莹润烟酰胺）", "status": "ON"},
+      {"barcode": "6975326789356", "productCode": "2C06E013AAA02-01", "name": "COLORKEY LUMINOUS NOURISHING FACIAL MASK 25mI（越南沁润金缕梅）", "status": "ON"},
+      {"barcode": "6975326789332", "productCode": "2C06E013AAA03-01", "name": "COLORKEY LUMINOUS REPLENISHING FACIAL MASK 25mI（越南光甘草定）", "status": "ON"},
+      {"barcode": "6975326789400", "productCode": "2C06E014AAA05-01", "name": "Mặt nạ B5 COLORKEY LUMINOUS BRIGHTENING FACIAL MASK 25ml*10pcs（越南恒润雪莲）- LOGO MỚI", "status": "ON"},
+      {"barcode": "6977304932662", "productCode": "2C06E019AAA01-01", "name": "Mặt Nạ Cấp Ẩm Và Sáng Da B3 COLORKEY LUMINOUS B3 Brightening & Hydrating Facial Mask 30ml", "status": "ON"},
+      {"barcode": "6977304932679", "productCode": "2C06E019AAA02-01", "name": "Mặt Nạ Se Khít Lỗ Chân Lông Và Sáng Da B3 COLORKEY LUMINOUS B3 Brightening & Pore Minimizing Facial Mask 30ml", "status": "ON"},
+      {"barcode": "6977304932631", "productCode": "2C06E020AAA03-01", "name": "Mặt Nạ Phục Hồi Và Sáng Da B3 COLORKEY LUMINOUS B3 Brightening & Repairing Facial Mask 30ml*10ml - LOGO MỚI", "status": "ON"},
+      {"barcode": "6977304932693", "productCode": "2C06E019AAA04-01", "name": "Mặt Nạ Săn Chắc Và Sáng Da B3 COLORKEY LUMINOUS B3 Brightening & Firming Facial Mask 30ml", "status": "ON"},
+      {"barcode": "6977304932709", "productCode": "2C06E019AAA05-01", "name": "Mặt Nạ Dưỡng Ẩm Và Sáng Da B3 COLORKEY LUMINOUS B3 Brightening & Nourishing Facial Mask 30ml", "status": "ON"},
+      {"barcode": "6977304934970", "productCode": "2C09B001AAAAA-01", "name": "SỮA DƯỠNG THỂ SÁNG DA COLORKEY ROSÉ Rosé Crush Perfumed Brightening Body Lotion 200g", "status": "ON"},
+      {"barcode": "6977304935663", "productCode": "2C06E043AAAAA-01", "name": "MẶT NẠ COLORKEY LUMINOUS Blueberry Pdrn Drink Up Facial Mask 25ml*10", "status": "ON"},
+      {"barcode": "6977304935670", "productCode": "2C06E042AAAAA-01", "name": "MẶT NẠ 25ML COLORKEY LUMINOUS Blueberry Pdrn Drink Up Facial Mask 25ml", "status": "ON"},
+      {"barcode": "6977304935649", "productCode": "2C06E044AAAAA-01", "name": "MẶT NẠ 25ML COLORKEY LUMINOUS Rice Pdrn Tone Up Facial Mask 25ml", "status": "ON"},
+      {"barcode": "6977304935625", "productCode": "2C06E048AAAAA-01", "name": "MẶT NẠ 25ML COLORKEY LUMINOUS Pomegranate Pdrn Glow-Boosting Facial Mask 25ml", "status": "ON"},
+      {"barcode": "6977304935618", "productCode": "2C06E046AAAAA-01", "name": "MẶT NẠ 25ML COLORKEY LUMINOUS Algae Pdrn Youth-Boosting Facial Mask 25ml", "status": "ON"},
+      {"barcode": "6977304930651", "productCode": "2C06E015AAAAA-01", "name": "MẶT NẠ COLORKEY LUMINOUS PURIFYING FACIAL MASK 25ml", "status": "OFF"}
     ];
 
     let MASTER_PRODUCTS = DEFAULT_MASTER;
     try {
-      const stored = localStorage.getItem('MASTER_PRODUCTS_V3');
-      if (stored) MASTER_PRODUCTS = JSON.parse(stored);
+      const stored = localStorage.getItem('MASTER_PRODUCTS_V4');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) MASTER_PRODUCTS = parsed;
+      }
     } catch(e) {}
 
     let CUSTOMERS = [
@@ -434,7 +446,6 @@
       });
       document.getElementById(tabId).classList.remove('hidden');
 
-      // Update sidebar styling
       ['nav-converter', 'nav-customers', 'nav-master', 'nav-settings'].forEach(id => {
         document.getElementById(id).classList.remove('nav-active');
       });
@@ -442,7 +453,7 @@
       if (tabId === 'tab-converter') {
         document.getElementById('nav-converter').classList.add('nav-active');
         document.getElementById('pageTitle').innerText = "Bóc Tách File PDF Đơn Hàng Sang Order Form";
-        document.getElementById('pageSubtitle').innerText = "Tự động nhận diện định dạng PO, trích xuất Barcode và mapping dữ liệu chuẩn";
+        document.getElementById('pageSubtitle').innerText = "Tự động nhận diện Barcode, Product Code và mapping Order Form chuẩn";
       } else if (tabId === 'tab-customers') {
         document.getElementById('nav-customers').classList.add('nav-active');
         document.getElementById('pageTitle').innerText = "Quản Lý Danh Sách Khách Hàng & Đối Tác";
@@ -450,8 +461,8 @@
         renderCustomerTable();
       } else if (tabId === 'tab-master') {
         document.getElementById('nav-master').classList.add('nav-active');
-        document.getElementById('pageTitle').innerText = "Cơ Sở Dữ Liệu Master Product";
-        document.getElementById('pageSubtitle').innerText = "Tra cứu, sửa đổi hoặc import danh mục sản phẩm và Barcode chuẩn";
+        document.getElementById('pageTitle').innerText = "Cơ Sở Dữ Liệu Master Product Database";
+        document.getElementById('pageSubtitle').innerText = "Danh mục 382 sản phẩm chuẩn tích hợp từ Product List";
         renderFullMasterTable();
       } else if (tabId === 'tab-settings') {
         document.getElementById('nav-settings').classList.add('nav-active');
@@ -459,10 +470,10 @@
         document.getElementById('pageSubtitle').innerText = "Tạo account mới cho nhân viên Ops và phân quyền sử dụng";
         renderAccountTable();
       }
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     }
 
-    // 3. RENDERERS FOR SIDEBAR TABS
+    // 3. RENDERERS
     function renderCustomerTable() {
       const tbody = document.getElementById('customerTableBody');
       tbody.innerHTML = CUSTOMERS.map(c => `
@@ -479,25 +490,32 @@
 
     function renderFullMasterTable(data = MASTER_PRODUCTS) {
       const tbody = document.getElementById('fullMasterTableBody');
-      tbody.innerHTML = data.map(p => `
+      tbody.innerHTML = data.map(p => {
+        const isOff = (p.status || '').toUpperCase() === 'OFF';
+        return `
         <tr class="hover:bg-slate-50 transition">
-          <td class="px-4 py-2.5 font-mono font-bold text-slate-800">${p.barcode}</td>
-          <td class="px-4 py-2.5 font-medium text-slate-900">${p.name}</td>
-          <td class="px-4 py-2.5 text-center">
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${p.status && p.status.includes('Hết hàng') ? 'bg-slate-100 text-slate-600' : 'bg-emerald-100 text-emerald-700'}">
-              ${p.status || 'Active'}
+          <td class="px-4 py-2 font-mono font-bold text-slate-800">${p.barcode}</td>
+          <td class="px-4 py-2 font-mono font-medium text-indigo-700">${p.productCode || '-'}</td>
+          <td class="px-4 py-2 font-medium text-slate-800">${p.name}</td>
+          <td class="px-4 py-2 text-center">
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${isOff ? 'bg-rose-100 text-rose-700 border border-rose-200' : 'bg-emerald-100 text-emerald-700 border border-emerald-200'}">
+              ${isOff ? 'OFF (Ngừng KD)' : 'ON (Kinh doanh)'}
             </span>
           </td>
         </tr>
-      `).join('');
+        `;
+      }).join('');
       document.getElementById('masterTableCount').innerText = MASTER_PRODUCTS.length;
       document.getElementById('sidebarMasterCount').innerText = MASTER_PRODUCTS.length;
-      document.getElementById('masterCount').innerText = MASTER_PRODUCTS.length;
     }
 
     function filterMasterTable() {
-      const q = document.getElementById('searchMasterInput').value.toLowerCase();
-      const filtered = MASTER_PRODUCTS.filter(p => p.barcode.toLowerCase().includes(q) || p.name.toLowerCase().includes(q));
+      const q = (document.getElementById('searchMasterInput').value || '').toLowerCase().trim();
+      const filtered = MASTER_PRODUCTS.filter(p => 
+        (p.barcode || '').toLowerCase().includes(q) || 
+        (p.productCode || '').toLowerCase().includes(q) || 
+        (p.name || '').toLowerCase().includes(q)
+      );
       renderFullMasterTable(filtered);
     }
 
@@ -537,7 +555,7 @@
       renderCustomerTable();
     }
 
-    // 4. PARSER & MAPPING ALGORITHMS
+    // 4. MAPPING LOGIC (STATUS ON / OFF)
     function getSimilarity(s1, s2) {
       s1 = (s1 || "").toUpperCase().replace(/[\s-_]/g, '');
       s2 = (s2 || "").toUpperCase().replace(/[\s-_]/g, '');
@@ -576,14 +594,17 @@
       if (!rawCode) return { status: "Not Found", suggested: null };
       const cleaned = String(rawCode).trim().toUpperCase();
 
+      // 1. Exact match
       const exact = MASTER_PRODUCTS.find(p => String(p.barcode).toUpperCase() === cleaned);
       if (exact) {
-        if (exact.status && exact.status.includes("Hết hàng")) {
-          return { status: "Hết hàng / Inactive", item: exact, suggested: exact.barcode };
+        const isOff = (exact.status || '').toUpperCase() === 'OFF';
+        if (isOff) {
+          return { status: "Ngừng KD (OFF)", item: exact, suggested: exact.barcode };
         }
-        return { status: "Matched", item: exact, suggested: exact.barcode };
+        return { status: "Matched (ON)", item: exact, suggested: exact.barcode };
       }
 
+      // 2. Fuzzy match
       let bestMatch = null;
       let highestScore = 0;
       MASTER_PRODUCTS.forEach(p => {
@@ -612,16 +633,16 @@
       extractedData.forEach(item => { counts[item.barcode] = (counts[item.barcode] || 0) + 1; });
 
       extractedData.forEach((item, index) => {
-        if (counts[item.barcode] > 1 && item.status === "Matched") item.isDuplicate = true;
-        if (item.status === "Matched") matchedCount++;
+        if (counts[item.barcode] > 1 && item.status === "Matched (ON)") item.isDuplicate = true;
+        if (item.status === "Matched (ON)") matchedCount++;
         else reviewCount++;
 
         if (filter !== "ALL" && item.status !== filter) return;
 
         let badgeClass = "badge-notfound";
-        if (item.status === "Matched") badgeClass = "badge-matched";
+        if (item.status === "Matched (ON)") badgeClass = "badge-matched";
         else if (item.status === "Potential Match") badgeClass = "badge-potential";
-        else if (item.status === "Hết hàng / Inactive") badgeClass = "badge-inactive";
+        else if (item.status === "Ngừng KD (OFF)") badgeClass = "badge-inactive";
 
         const tr = document.createElement("tr");
         tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
@@ -629,15 +650,18 @@
           <td class="px-3.5 py-2.5 font-mono text-xs font-semibold text-slate-500">${index + 1}</td>
           <td class="px-3.5 py-2.5 font-mono font-semibold text-slate-900">
             <input type="text" value="${item.barcode}" 
-              class="border border-slate-200 rounded px-2 py-1 text-xs font-mono w-36 bg-white focus:ring-1 focus:ring-indigo-500"
+              class="border border-slate-200 rounded px-2 py-1 text-xs font-mono w-32 bg-white focus:ring-1 focus:ring-indigo-500"
               onchange="handleBarcodeChange(${index}, this.value)">
+          </td>
+          <td class="px-3.5 py-2.5 font-mono text-xs font-bold text-indigo-700">
+            ${item.productCode || '-'}
           </td>
           <td class="px-3.5 py-2.5 font-medium text-slate-800">
             ${item.packageName || '<span class="text-rose-500 italic">Chưa map được tên trong Master DB</span>'}
           </td>
           <td class="px-3.5 py-2.5 text-center">
             <input type="number" min="0" value="${item.quantity}" 
-              class="w-20 border border-slate-200 rounded px-2 py-1 text-xs text-center font-semibold text-slate-800 focus:ring-1 focus:ring-indigo-500"
+              class="w-16 border border-slate-200 rounded px-2 py-1 text-xs text-center font-semibold text-slate-800 focus:ring-1 focus:ring-indigo-500"
               onchange="handleQuantityChange(${index}, this.value)" />
           </td>
           <td class="px-3.5 py-2.5 text-right font-mono font-medium text-slate-800">
@@ -667,7 +691,7 @@
       document.getElementById("statExtracted").innerText = extractedData.length;
       document.getElementById("statMatched").innerText = matchedCount;
       document.getElementById("statNeedReview").innerText = reviewCount;
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     }
 
     window.handleBarcodeChange = function(index, newCode) {
@@ -675,6 +699,7 @@
       const mapped = mapMasterBarcode(newCode);
       extractedData[index].status = mapped.status;
       extractedData[index].packageName = mapped.item ? mapped.item.name : "";
+      extractedData[index].productCode = mapped.item ? (mapped.item.productCode || "") : "";
       renderValidationTable();
     };
 
@@ -721,7 +746,6 @@
       document.getElementById("poAddressInput").value = currentPOHeader.address;
       document.getElementById("poHeaderSection").classList.remove("hidden");
 
-      // Global regex match across all pages
       const barcodeRegex = /\b(69\d{11}|\d{13})\b/g;
       const barcodeMatches = [];
       let m;
@@ -753,6 +777,7 @@
           extractedData.push({
             fileName: fileName,
             barcode: item.barcode,
+            productCode: mapped.item ? (mapped.item.productCode || "") : "",
             packageName: mapped.item ? mapped.item.name : "",
             quantity: qty,
             amount: amount,
@@ -821,7 +846,7 @@
           readPdf(file);
         }
       });
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     }
 
     // Demo Button
@@ -863,6 +888,7 @@
         extractedData.push({
           fileName: "Purchase Order 100260900275.pdf",
           barcode: d.barcode,
+          productCode: mapped.item ? (mapped.item.productCode || "") : "",
           packageName: mapped.item ? mapped.item.name : "",
           quantity: d.qty,
           amount: d.amount,
@@ -876,11 +902,11 @@
       renderValidationTable();
     });
 
-    // Export Order Form (.xlsx)
+    // Export Order Form (.xlsx) - ADD PRODUCT CODE COLUMN TO EXPORT!
     document.getElementById("btnExportOrderForm").addEventListener("click", () => {
-      const validItems = extractedData.filter(d => d.status === "Matched" || d.status === "Potential Match");
+      const validItems = extractedData.filter(d => d.status === "Matched (ON)" || d.status === "Potential Match" || d.status === "Ngừng KD (OFF)");
       if (validItems.length === 0) {
-        alert("Không có sản phẩm nào hợp lệ để xuất Order Form!");
+        alert("Không có sản phẩm nào để xuất Order Form!");
         return;
       }
 
@@ -888,19 +914,20 @@
       const address = document.getElementById("poAddressInput").value || currentPOHeader.address;
       const expiredDate = document.getElementById("poExpiredDateInput").value || currentPOHeader.expiredDate;
 
+      // Structure: Added Product Code column
       const rows = [
-        ["PO Number", poNo, null, null, null],
-        ["Address", address, null, null, null],
-        ["Expired Date:", expiredDate, null, null, null],
-        ["STT", "Bar code", "Package Name", "Quantity\n下单数量", "Amount\n($)"]
+        ["PO Number", poNo, null, null, null, null],
+        ["Address", address, null, null, null, null],
+        ["Expired Date:", expiredDate, null, null, null, null],
+        ["STT", "Bar code", "Product Code", "Package Name", "Quantity\n下单数量", "Amount\n($)"]
       ];
 
       validItems.forEach((d, idx) => {
-        rows.push([idx + 1, d.barcode, d.packageName || "", d.quantity, d.amount]);
+        rows.push([idx + 1, d.barcode, d.productCode || "", d.packageName || "", d.quantity, d.amount]);
       });
 
       const worksheet = XLSX.utils.aoa_to_sheet(rows);
-      worksheet['!cols'] = [{ wch: 8 }, { wch: 18 }, { wch: 65 }, { wch: 16 }, { wch: 16 }];
+      worksheet['!cols'] = [{ wch: 8 }, { wch: 18 }, { wch: 22 }, { wch: 65 }, { wch: 16 }, { wch: 16 }];
 
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
@@ -913,7 +940,7 @@
         po: poNo,
         file: validItems[0].fileName || "PO.pdf",
         total: extractedData.length,
-        matchRate: ((validItems.length / extractedData.length) * 100).toFixed(0) + "%",
+        matchRate: ((validItems.filter(i => i.status === "Matched (ON)").length / extractedData.length) * 100).toFixed(0) + "%",
         outFile: `Order_Form_${poNo}.xlsx`
       });
 
@@ -941,22 +968,23 @@
         const json = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
         
         MASTER_PRODUCTS = json.map(r => ({
-          barcode: String(r["Bar code"] || r["Barcode"] || r["Mã SKU"] || r["SKU"] || "").trim(),
-          name: r["Package Name"] || r["Tên sản phẩm"] || r["Name"] || "",
-          status: r["Trạng thái"] || r["Status"] || "Active"
+          barcode: String(r["Barcode"] || r["Bar code"] || r["Mã Barcode"] || "").trim(),
+          productCode: String(r["Product Code"] || r["Mã SP"] || r["Mã sản phẩm"] || "").trim(),
+          name: String(r["Product Name"] || r["Package Name"] || r["Tên sản phẩm"] || "").trim(),
+          status: String(r["Status"] || r["Trạng thái"] || "ON").trim().toUpperCase()
         })).filter(r => r.barcode);
 
-        localStorage.setItem('MASTER_PRODUCTS_V3', JSON.stringify(MASTER_PRODUCTS));
+        localStorage.setItem('MASTER_PRODUCTS_V4', JSON.stringify(MASTER_PRODUCTS));
         renderFullMasterTable();
-        alert(`Đã nạp thành công ${MASTER_PRODUCTS.length} sản phẩm Master!`);
+        alert(`Đã nạp thành công ${MASTER_PRODUCTS.length} sản phẩm từ file Product List!`);
       };
       reader.readAsBinaryString(file);
     });
 
     document.getElementById("btnResetMaster").addEventListener("click", () => {
-      if (confirm("Khôi phục lại danh mục Master Colorkey mặc định?")) {
+      if (confirm("Khôi phục lại danh mục Master Product List 382 sản phẩm mặc định?")) {
         MASTER_PRODUCTS = DEFAULT_MASTER;
-        localStorage.removeItem('MASTER_PRODUCTS_V3');
+        localStorage.removeItem('MASTER_PRODUCTS_V4');
         renderFullMasterTable();
       }
     });
@@ -968,12 +996,12 @@
       renderFullMasterTable();
       renderCustomerTable();
       renderAccountTable();
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     });
     renderFullMasterTable();
     renderCustomerTable();
     renderAccountTable();
-    lucide.createIcons();
+    if (window.lucide) lucide.createIcons();
   </script>
 </body>
 </html>
