@@ -140,25 +140,17 @@
         </div>
       </div>
 
-      <!-- Upload Zone -->
-      <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs">
-        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+      <!-- Select Customer & Upload Zone -->
+      <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-xs space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
           <div>
-            <h3 class="text-sm font-semibold text-slate-900">1. Tải lên File Purchase Order (PDF)</h3>
-            <p class="text-xs text-slate-500">Hỗ trợ tự động nhận dạng biểu mẫu Watsons, chuỗi bán lẻ, siêu thị và các định dạng PO khác.</p>
+            <h3 class="text-sm font-semibold text-slate-900">1. Chọn Khách Hàng / Đối Tác Nhận Đơn</h3>
+            <p class="text-xs text-slate-500">Vui lòng chọn khách hàng trước khi tải lên file Purchase Order (PDF) để liên kết đúng dữ liệu mã hàng mới.</p>
           </div>
-          <div class="flex flex-wrap items-center gap-3">
-            <button id="btnLoadWatsonsDemo" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold underline flex items-center gap-1 cursor-pointer">
-              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Test PO Watsons (17 items)
-            </button>
-            <span class="text-slate-300">|</span>
-            <button id="btnLoadGuardianDemo" class="text-xs text-emerald-600 hover:text-emerald-800 font-semibold underline flex items-center gap-1 cursor-pointer">
-              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Test PO Guardian (5 items)
-            </button>
-            <span class="text-slate-300">|</span>
-            <button id="btnLoadTGSFDemo" class="text-xs text-amber-600 hover:text-amber-800 font-semibold underline flex items-center gap-1 cursor-pointer">
-              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Test PO TGSF (39 items)
-            </button>
+          <div class="w-72">
+            <select id="selectCustomerDropdown" class="w-full text-xs border border-indigo-300 rounded-lg px-3 py-2.5 bg-indigo-50/50 font-semibold text-indigo-900 focus:ring-1 focus:ring-indigo-500">
+              <option value="">-- Chọn Khách Hàng --</option>
+            </select>
           </div>
         </div>
 
@@ -168,7 +160,7 @@
             <i data-lucide="upload-cloud" class="w-5 h-5"></i>
           </div>
           <p class="text-sm font-semibold text-slate-800">Nhấp để chọn file hoặc kéo thả file Purchase Order (.pdf) vào đây</p>
-          <p class="text-xs text-slate-400 mt-0.5">Hệ thống sẽ tự động bóc tách toàn bộ các trang và bảng sản phẩm</p>
+          <p class="text-xs text-slate-400 mt-0.5">Hệ thống sẽ tự động bóc tách và liên kết với mục Data của khách hàng đã chọn</p>
         </div>
 
         <div id="fileListContainer" class="mt-3 hidden">
@@ -258,6 +250,7 @@
             <thead class="bg-slate-50 uppercase font-semibold text-slate-500 border-b border-slate-200 text-[11px]">
               <tr>
                 <th class="px-3 py-2">Thời gian</th>
+                <th class="px-3 py-2">Khách hàng</th>
                 <th class="px-3 py-2">PO Number</th>
                 <th class="px-3 py-2">File Nguồn</th>
                 <th class="px-3 py-2">Tổng mã</th>
@@ -267,7 +260,7 @@
             </thead>
             <tbody id="historyTableBody" class="divide-y divide-slate-100">
               <tr>
-                <td class="px-3 py-2 text-slate-400" colspan="6">Chưa có lịch sử xuất file.</td>
+                <td class="px-3 py-2 text-slate-400" colspan="7">Chưa có lịch sử xuất file.</td>
               </tr>
             </tbody>
           </table>
@@ -414,36 +407,42 @@
       </div>
     </section>
 
-    <!-- TAB: MỤC DATA & MÃ HÀNG MỚI -->
+    <!-- TAB: MỤC DATA & MÃ HÀNG MỚI THEO KHÁCH HÀNG -->
     <section id="tab-data" class="p-6 space-y-5 hidden">
       <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 class="text-sm font-bold text-slate-900">Mục Data - Theo Dõi Mã Hàng Mới & Lịch Sử Trích Xuất</h3>
-          <p class="text-xs text-slate-500">Hệ thống tự động phân tích lịch sử bóc tách PO để phát hiện các SKU mới xuất hiện giúp bộ phận Ops cấp phát tester kịp thời.</p>
+          <h3 class="text-sm font-bold text-slate-900">Mục Data - Theo Dõi Mã Hàng Mới Theo Khách Hàng</h3>
+          <p class="text-xs text-slate-500">Lịch sử trích xuất PO được phân loại theo từng khách hàng để quản lý SKU mới và cấp phát tester chính xác.</p>
         </div>
-        <button onclick="scanNewItemsFromHistory()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shadow-xs">
-          <i data-lucide="refresh-cw" class="w-4 h-4"></i> Quét Lại Dữ Liệu Lịch Sử
-        </button>
+        <div class="flex items-center gap-2">
+          <select id="filterDataCustomer" onchange="renderDataNewItemsTable()" class="text-xs border border-slate-300 rounded-lg px-3 py-2 bg-white font-semibold text-slate-700">
+            <option value="ALL">Tất cả khách hàng</option>
+          </select>
+          <button onclick="renderDataNewItemsTable()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shadow-xs">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i> Làm Mới Dữ Liệu
+          </button>
+        </div>
       </div>
 
       <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">
         <div class="p-3.5 border-b border-slate-100 bg-slate-50 flex justify-between items-center text-xs">
-          <span class="font-semibold text-slate-700">Danh sách các mã hàng mới / phát hiện gần đây từ PO:</span>
+          <span class="font-semibold text-slate-700">Danh sách các mã hàng mới phát hiện theo khách hàng:</span>
           <span class="text-indigo-600 font-bold" id="newItemsTableCount">0 mã SKU mới</span>
         </div>
         <table class="w-full text-left text-xs text-slate-600">
           <thead class="bg-slate-50 uppercase font-semibold text-slate-500 border-b border-slate-200 text-[11px]">
             <tr>
+              <th class="px-4 py-3">Khách Hàng / Đối Tác</th>
               <th class="px-4 py-3">Mã Barcode</th>
               <th class="px-4 py-3">Tên Sản Phẩm / SKU</th>
               <th class="px-4 py-3">PO Phát Hiện</th>
               <th class="px-4 py-3 text-center">Số Lượng Đặt</th>
-              <th class="px-4 py-3 text-center">Đề Xuất Cấp Tester</th>
+              <th class="px-4 py-3 text-center">Đề Xuất Tester (1:1)</th>
             </tr>
           </thead>
           <tbody id="newDataItemsTableBody" class="divide-y divide-slate-100">
             <tr>
-              <td class="px-4 py-3 text-slate-400 italic" colspan="5">Chưa có dữ liệu lịch sử bóc tách PO nào. Vui lòng tải lên file PO ở tab Xử lý Đơn hàng để hệ thống quét.</td>
+              <td class="px-4 py-3 text-slate-400 italic" colspan="6">Chưa có dữ liệu lịch sử bóc tách PO nào. Vui lòng chọn khách hàng và tải lên file PO ở tab Xử lý Đơn hàng.</td>
             </tr>
           </tbody>
         </table>
@@ -644,8 +643,9 @@
         document.getElementById('pageSubtitle').innerText = "Quản lý chính sách quà tặng và cấu hình tính năng xuất phiếu xuất kho, phiếu quà tặng";
       } else if (tabId === 'tab-data') {
         document.getElementById('nav-data').classList.add('nav-active');
-        document.getElementById('pageTitle').innerText = "Mục Data - Phân Tích Mã Hàng Mới & Lịch Sử";
-        document.getElementById('pageSubtitle').innerText = "Dựa trên lịch sử extract PO để phát hiện SKU mới và đề xuất cấp phát tester";
+        document.getElementById('pageTitle').innerText = "Mục Data - Phân Tích Mã Hàng Mới Theo Khách Hàng";
+        document.getElementById('pageSubtitle').innerText = "Dựa trên lịch sử extract PO phân loại theo khách hàng để theo dõi SKU mới và đề xuất cấp phát tester";
+        populateCustomerDropdowns();
         renderDataNewItemsTable();
       } else if (tabId === 'tab-settings') {
         document.getElementById('nav-settings').classList.add('nav-active');
@@ -654,6 +654,23 @@
         renderAccountTable();
       }
       if (window.lucide) lucide.createIcons();
+    }
+
+    // Populate customer dropdowns in Converter tab and Data tab
+    function populateCustomerDropdowns() {
+      const selectConv = document.getElementById('selectCustomerDropdown');
+      const filterData = document.getElementById('filterDataCustomer');
+      if (!selectConv) return;
+
+      const optionsHtml = '<option value="">-- Chọn Khách Hàng --</option>' + 
+        CUSTOMERS.map(c => `<option value="${c.code}">${c.name}</option>`).join('');
+      selectConv.innerHTML = optionsHtml;
+
+      if (filterData) {
+        const filterHtml = '<option value="ALL">Tất cả khách hàng</option>' + 
+          CUSTOMERS.map(c => `<option value="${c.code}">${c.name}</option>`).join('');
+        filterData.innerHTML = filterHtml;
+      }
     }
 
     // 3. MASTER PRODUCT CRUD OPERATIONS
@@ -856,6 +873,7 @@
       const address = prompt("Nhập địa chỉ giao hàng mặc định:") || "Việt Nam";
       CUSTOMERS.push({ code, name, address, poFormat: "Standard Retail PDF" });
       renderCustomerTable();
+      populateCustomerDropdowns();
     }
 
     // 5. MAPPING LOGIC (STATUS ON / OFF)
@@ -1036,18 +1054,28 @@
       return parseFloat(clean) || 0;
     }
 
+    let globalExtractedArchive = []; // Lưu trữ lịch sử trích xuất theo khách hàng
+
     function parsePdfContent(fullText, fileName) {
-      const isTGSF = /THEGIOISKIN/i.test(fullText) || /BLUE\s*OCEAN/i.test(fullText) || /TGSF/i.test(fullText);
-      const isGuardian = !isTGSF && (/Mã Đơn Hàng/i.test(fullText) || /Ngày Phân Phối/i.test(fullText) || /guardian/i.test(fullText) || /LIÊN Á CHÂU/i.test(fullText));
+      const selectedCustomerCode = document.getElementById("selectCustomerDropdown").value;
+      if (!selectedCustomerCode) {
+        alert("Vui lòng chọn khách hàng ở mục phía trên trước khi tải lên file PO!");
+        document.getElementById("fileListContainer").classList.add("hidden");
+        return;
+      }
+
+      const custObj = CUSTOMERS.find(c => c.code === selectedCustomerCode);
+      const customerName = custObj ? custObj.name : selectedCustomerCode;
+
+      const isTGSF = /THEGIOISKIN/i.test(fullText) || /BLUE\s*OCEAN/i.test(fullText) || /TGSF/i.test(fullText) || selectedCustomerCode === 'CUST_TGSF';
+      const isGuardian = !isTGSF && (/Mã Đơn Hàng/i.test(fullText) || /Ngày Phân Phối/i.test(fullText) || /guardian/i.test(fullText) || /LIÊN Á CHÂU/i.test(fullText) || selectedCustomerCode === 'CUST_GUARDIAN');
 
       extractedData = [];
 
       if (isTGSF) {
-        // Find all PO blocks in TGSF PDF by searching for "(PO No.):" or "Mã Đơn Hàng"
-        const poBlocks = [];
+        const poIndices = [];
         const poHeaderRegex = /\(PO\s*No\.\):?[\s\r\n]*([^\r\n]+)/gi;
         let match;
-        const poIndices = [];
         while ((match = poHeaderRegex.exec(fullText)) !== null) {
           poIndices.push({ poNo: match[1].trim(), index: match.index });
         }
@@ -1066,13 +1094,12 @@
           const addrMatch = blockText.match(/\(Delivery\s*To\)[\s\r\n.:]*([\s\S]*?)(?=Tel\/Fax:|NCC|\(Vendor\)|$)/i);
 
           let expDate = expMatch ? expMatch[1].trim() : "25/08/2026";
-          let address = "SR 365 LVS Số 363 - 365 Đường Lê Văn Sỹ Phường Nhiêu Lộc, TP. HCM";
+          let address = custObj ? custObj.address : "SR 365 LVS Số 363 - 365 Đường Lê Văn Sỹ Phường Nhiêu Lộc, TP. HCM";
           if (addrMatch) {
             let raw = addrMatch[1].replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
             address = raw.replace(/^[:\s]+/, '');
           }
 
-          // Scan barcodes in this block
           const barcodeRegex = /\b(69\d{11}|\d{13})\b/g;
           const rawMatches = [];
           let m;
@@ -1080,12 +1107,10 @@
             rawMatches.push({ barcode: m[1], index: m.index });
           }
 
-          // Pair Mã Hàng (Product Code) and Mã Vạch (Barcode): in TGSF table, Mã Hàng is first, Mã Vạch is second within ~40 chars
           const blockBarcodes = [];
           let i = 0;
           while (i < rawMatches.length) {
             if (i < rawMatches.length - 1 && (rawMatches[i+1].index - rawMatches[i].index < 40)) {
-              // rawMatches[i] is Mã Hàng, rawMatches[i+1] is Mã Vạch (Barcode)
               blockBarcodes.push({ barcode: rawMatches[i+1].barcode, index: rawMatches[i+1].index, productCode: rawMatches[i].barcode });
               i += 2;
             } else {
@@ -1120,8 +1145,10 @@
             }
 
             const mapped = mapMasterBarcode(bItem.barcode);
-            extractedData.push({
+            const dataItem = {
               fileName: fileName,
+              customerCode: selectedCustomerCode,
+              customerName: customerName,
               poNo: poNo,
               expiredDate: expDate,
               address: address,
@@ -1133,11 +1160,12 @@
               status: mapped.status,
               suggested: mapped.suggested,
               isDuplicate: false
-            });
+            };
+            extractedData.push(dataItem);
+            globalExtractedArchive.push(dataItem);
           });
         });
 
-        // Set header to first PO found
         if (extractedData.length > 0) {
           currentPOHeader.poNumber = extractedData[0].poNo;
           currentPOHeader.expiredDate = extractedData[0].expiredDate;
@@ -1145,31 +1173,27 @@
         }
       } else {
         // Single PO logic for Guardian or Watsons
+        let poNumDefault = "PO-2026";
+        let addressDefault = custObj ? custObj.address : "Việt Nam";
+        let expDefault = "08/09/2026";
+
         if (isGuardian) {
           const poMatch = fullText.match(/Mã Đơn Hàng\s*(?:\(PO No\.\))?[\s.:]*([A-Za-z0-9]+)/i);
           const expMatch = fullText.match(/Ngày Phân Phối\s*(?:\(Last Delivery Date\))?[\s.:]*([0-9]{2}[-/.][0-9]{2}[-/.][0-9]{2,4})/i);
           const addrMatch = fullText.match(/Phân Phối Đến\s*(?:\(Delivery To\))?[\s.:]*([\s\S]*?)(?=NCC|Địa Chỉ|\(Address\)|Tel\/Fax:|$)/i);
 
-          if (poMatch) currentPOHeader.poNumber = poMatch[1].trim();
-          if (expMatch) currentPOHeader.expiredDate = expMatch[1].trim();
-          if (addrMatch) {
-            currentPOHeader.address = addrMatch[1].replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
-          } else {
-            currentPOHeader.address = "5901A Z11, Phường Trung Mỹ Tây, Quận 12, TpHCM, Việt Nam";
-          }
+          if (poMatch) poNumDefault = poMatch[1].trim();
+          if (expMatch) expDefault = expMatch[1].trim();
+          if (addrMatch) addressDefault = addrMatch[1].replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
         } else {
           const poNoMatch = fullText.match(/PO\s*(?:No|Number|#)[\s.:]*([0-9]{8,15})/i);
           const expiredMatch = fullText.match(/Expired\s*Date[\s.:]*([0-9]{2,4}[-/.][0-9]{2}[-/.][0-9]{2,4})/i) || 
                                fullText.match(/Delivery\s*Date[\s.:]*([0-9]{2,4}[-/.][0-9]{2}[-/.][0-9]{2,4})/i);
           const deliveryToMatch = fullText.match(/Delivery\s*To[\s.:]*([\s\S]*?)(?=Tel:|$)/i);
 
-          if (poNoMatch) currentPOHeader.poNumber = poNoMatch[1].trim();
-          if (expiredMatch) currentPOHeader.expiredDate = expiredMatch[1].trim();
-          if (deliveryToMatch) {
-            currentPOHeader.address = deliveryToMatch[1].replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
-          } else {
-            currentPOHeader.address = "Tầng 2, S71, Aeon Tân Phú 30 Bờ Bao Tân Thắng, P. Tây Thạnh, TP. HCM";
-          }
+          if (poNoMatch) poNumDefault = poNoMatch[1].trim();
+          if (expiredMatch) expDefault = expiredMatch[1].trim();
+          if (deliveryToMatch) addressDefault = deliveryToMatch[1].replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
         }
 
         const barcodeRegex = /\b(69\d{11}|\d{13})\b/g;
@@ -1228,11 +1252,13 @@
             }
 
             const mapped = mapMasterBarcode(item.barcode);
-            extractedData.push({
+            const dataItem = {
               fileName: fileName,
-              poNo: currentPOHeader.poNumber,
-              expiredDate: currentPOHeader.expiredDate,
-              address: currentPOHeader.address,
+              customerCode: selectedCustomerCode,
+              customerName: customerName,
+              poNo: poNumDefault,
+              expiredDate: expDefault,
+              address: addressDefault,
               barcode: item.barcode,
               productCode: mapped.item ? (mapped.item.productCode || "") : "",
               packageName: mapped.item ? mapped.item.name : "",
@@ -1241,10 +1267,16 @@
               status: mapped.status,
               suggested: mapped.suggested,
               isDuplicate: false
-            });
+            };
+            extractedData.push(dataItem);
+            globalExtractedArchive.push(dataItem);
           });
         }
       }
+
+      currentPOHeader.poNumber = extractedData.length > 0 ? extractedData[0].poNo : poNumDefault;
+      currentPOHeader.expiredDate = extractedData.length > 0 ? extractedData[0].expiredDate : expDefault;
+      currentPOHeader.address = extractedData.length > 0 ? extractedData[0].address : addressDefault;
 
       document.getElementById("poNumberInput").value = currentPOHeader.poNumber || "";
       document.getElementById("poExpiredDateInput").value = currentPOHeader.expiredDate || "";
@@ -1252,7 +1284,14 @@
       document.getElementById("poHeaderSection").classList.remove("hidden");
       document.getElementById("stepValidationSection").classList.remove("hidden");
       renderValidationTable();
-    }async function readPdf(file) {
+    }
+
+    async function readPdf(file) {
+      const selectedCustomerCode = document.getElementById("selectCustomerDropdown").value;
+      if (!selectedCustomerCode) {
+        alert("Vui lòng chọn khách hàng trước khi tải lên file PDF đơn hàng!");
+        return;
+      }
       const fileReader = new FileReader();
       fileReader.onload = async function() {
         const typedarray = new Uint8Array(this.result);
@@ -1277,12 +1316,24 @@
     const dropZone = document.getElementById("dropZone");
     const fileInput = document.getElementById("fileInput");
 
-    dropZone.addEventListener("click", () => fileInput.click());
+    dropZone.addEventListener("click", () => {
+      const selCust = document.getElementById("selectCustomerDropdown").value;
+      if (!selCust) {
+        alert("Vui lòng chọn khách hàng trước khi chọn file!");
+        return;
+      }
+      fileInput.click();
+    });
     dropZone.addEventListener("dragover", (e) => { e.preventDefault(); dropZone.classList.add("border-indigo-500"); });
     dropZone.addEventListener("dragleave", () => dropZone.classList.remove("border-indigo-500"));
     dropZone.addEventListener("drop", (e) => {
       e.preventDefault();
       dropZone.classList.remove("border-indigo-500");
+      const selCust = document.getElementById("selectCustomerDropdown").value;
+      if (!selCust) {
+        alert("Vui lòng chọn khách hàng trước khi thả file!");
+        return;
+      }
       handleFiles(e.dataTransfer.files);
     });
     fileInput.addEventListener("change", (e) => handleFiles(e.target.files));
@@ -1309,143 +1360,7 @@
       if (window.lucide) lucide.createIcons();
     }
 
-    // Demo Button
-    document.getElementById("btnLoadTGSFDemo").addEventListener("click", () => {
-      extractedData = [];
-      currentPOHeader = {
-        poNumber: "PO_MEISHANG _25082026 - LVS",
-        expiredDate: "29/08/2026",
-        address: "SR 365 LVS Số 363 - 365 Đường Lê Văn Sỹ Phường Nhiêu Lộc, TP. HCM"
-      };
-
-      document.getElementById("poNumberInput").value = currentPOHeader.poNumber;
-      document.getElementById("poExpiredDateInput").value = currentPOHeader.expiredDate;
-      document.getElementById("poAddressInput").value = currentPOHeader.address;
-      document.getElementById("poHeaderSection").classList.remove("hidden");
-
-      const tgsfDemoItems = [
-        { barcode: "6977304935229", qty: 5, amount: 466560 },
-        { barcode: "6977304935168", qty: 5, amount: 466560 },
-        { barcode: "6977304930958", qty: 30, amount: 2799360 },
-        { barcode: "6977304933249", qty: 4, amount: 401280 },
-        { barcode: "6977304933232", qty: 3, amount: 300960 },
-        { barcode: "6979009300395", qty: 3, amount: 573120 },
-        { barcode: "6977304932815", qty: 3, amount: 544320 },
-        { barcode: "6977304932822", qty: 10, amount: 1814400 },
-        { barcode: "6975505496631", qty: 10, amount: 650356 },
-        { barcode: "6975505496648", qty: 10, amount: 650356 }
-      ];
-
-      tgsfDemoItems.forEach(d => {
-        const mapped = mapMasterBarcode(d.barcode);
-        extractedData.push({
-          fileName: "PO_MEISHANG _25082026.pdf",
-          barcode: d.barcode,
-          productCode: mapped.item ? (mapped.item.productCode || "") : "",
-          packageName: mapped.item ? mapped.item.name : "",
-          quantity: d.qty,
-          amount: d.amount,
-          status: mapped.status,
-          suggested: mapped.suggested,
-          isDuplicate: false
-        });
-      });
-
-      document.getElementById("stepValidationSection").classList.remove("hidden");
-      renderValidationTable();
-    });
-
-    document.getElementById("btnLoadGuardianDemo").addEventListener("click", () => {
-      extractedData = [];
-      const demoGuardian = [
-        { barcode: "6975326785198", qty: 2, amount: 157714 },
-        { barcode: "6975326785204", qty: 5, amount: 394285 },
-        { barcode: "6975326789318", qty: 10, amount: 56000 },
-        { barcode: "6975505496631", qty: 10, amount: 560000 },
-        { barcode: "6975326789943", qty: 10, amount: 794290 }
-      ];
-
-      currentPOHeader = {
-        poNumber: "35901A0008899",
-        expiredDate: "08/05/2025",
-        address: "5901A Z11, Phường Trung Mỹ Tây, Quận 12, TpHCM, Việt Nam"
-      };
-
-      document.getElementById("poNumberInput").value = currentPOHeader.poNumber;
-      document.getElementById("poExpiredDateInput").value = currentPOHeader.expiredDate;
-      document.getElementById("poAddressInput").value = currentPOHeader.address;
-      document.getElementById("poHeaderSection").classList.remove("hidden");
-
-      demoGuardian.forEach(d => {
-        const mapped = mapMasterBarcode(d.barcode);
-        extractedData.push({
-          fileName: "Purchase Order_35901A0008899.pdf",
-          barcode: d.barcode,
-          productCode: mapped.item ? (mapped.item.productCode || "") : "",
-          packageName: mapped.item ? mapped.item.name : "",
-          quantity: d.qty,
-          amount: d.amount,
-          status: mapped.status,
-          suggested: mapped.suggested,
-          isDuplicate: false
-        });
-      });
-
-      document.getElementById("stepValidationSection").classList.remove("hidden");
-      renderValidationTable();
-    });
-
-    document.getElementById("btnLoadWatsonsDemo").addEventListener("click", () => {
-      extractedData = [];
-      const demoWatsons = [
-        { barcode: "6977304935663", qty: 15, amount: 1492500 },
-        { barcode: "6977304935663", qty: 15, amount: 0 },
-        { barcode: "6975326789318", qty: 340, amount: 2470255 },
-        { barcode: "6975326789356", qty: 150, amount: 1089818 },
-        { barcode: "6975326789332", qty: 120, amount: 871855 },
-        { barcode: "6975326789400", qty: 100, amount: 7265455 },
-        { barcode: "6977304930651", qty: 540, amount: 0 },
-        { barcode: "6977304932662", qty: 38, amount: 324000 },
-        { barcode: "6977304932679", qty: 70, amount: 756000 },
-        { barcode: "6977304932631", qty: 40, amount: 4280720 },
-        { barcode: "6977304932693", qty: 122, amount: 1296000 },
-        { barcode: "6977304932709", qty: 60, amount: 648000 },
-        { barcode: "6977304935670", qty: 58, amount: 500000 },
-        { barcode: "6977304935649", qty: 74, amount: 700000 },
-        { barcode: "6977304935625", qty: 120, amount: 1200000 },
-        { barcode: "6977304935618", qty: 94, amount: 900000 },
-        { barcode: "6977304934970", qty: 20, amount: 1390000 }
-      ];
-
-      currentPOHeader = {
-        poNumber: "100260900275",
-        expiredDate: "2026-09-19",
-        address: "Tầng 2, S71, Aeon Tân Phú \n30 Bờ Bao Tân Thắng, P. Tây Thạnh, TP. HCM"
-      };
-
-      document.getElementById("poNumberInput").value = currentPOHeader.poNumber;
-      document.getElementById("poExpiredDateInput").value = currentPOHeader.expiredDate;
-      document.getElementById("poAddressInput").value = currentPOHeader.address;
-      document.getElementById("poHeaderSection").classList.remove("hidden");
-
-      demoWatsons.forEach(d => {
-        const mapped = mapMasterBarcode(d.barcode);
-        extractedData.push({
-          fileName: "Purchase Order 100260900275.pdf",
-          barcode: d.barcode,
-          productCode: mapped.item ? (mapped.item.productCode || "") : "",
-          packageName: mapped.item ? mapped.item.name : "",
-          quantity: d.qty,
-          amount: d.amount,
-          status: mapped.status,
-          suggested: mapped.suggested,
-          isDuplicate: false
-        });
-      });
-
-      document.getElementById("stepValidationSection").classList.remove("hidden");
-      renderValidationTable();
-    });
+    // Demo Buttons removed per instruction
 
     // Export Order Form (.xlsx)
     document.getElementById("btnExportOrderForm").addEventListener("click", () => {
@@ -1457,7 +1372,6 @@
 
       const workbook = XLSX.utils.book_new();
 
-      // Group validItems by poNo
       const poGroups = {};
       validItems.forEach(d => {
         const poKey = d.poNo || document.getElementById("poNumberInput").value || currentPOHeader.poNumber || "ORDER";
@@ -1485,9 +1399,7 @@
         const worksheet = XLSX.utils.aoa_to_sheet(rows);
         worksheet['!cols'] = [{ wch: 8 }, { wch: 18 }, { wch: 22 }, { wch: 65 }, { wch: 16 }, { wch: 16 }];
 
-        // Sanitize sheet name for Excel (max 31 chars, remove \ / ? * : [ ])
         let sheetName = poKey.replace(/[:\\\/?*\[\]]/g, '_').substring(0, 31);
-        // Ensure unique sheet name
         if (workbook.SheetNames.includes(sheetName)) {
           sheetName = `${sheetName.substring(0, 27)}_${groupIdx}`;
         }
@@ -1500,11 +1412,15 @@
       const fileName = `Order_Form_${masterPoNo.replace(/[:\\\/?*\[\]]/g, '_')}.xlsx`;
       XLSX.writeFile(workbook, fileName);
 
-      // Add to Audit Log
+      const custCodeSel = document.getElementById("selectCustomerDropdown").value;
+      const custObj = CUSTOMERS.find(c => c.code === custCodeSel);
+      const custLabel = custObj ? custObj.name : "Khách hàng tổng hợp";
+
       const histTable = document.getElementById("historyTableBody");
       if (processingHistory.length === 0) histTable.innerHTML = "";
       processingHistory.push({
         time: new Date().toLocaleTimeString() + ' ' + new Date().toLocaleDateString(),
+        customer: custLabel,
         po: Object.keys(poGroups).join(', '),
         file: validItems[0].fileName || "PO.pdf",
         total: extractedData.length,
@@ -1515,6 +1431,7 @@
       histTable.innerHTML = processingHistory.map(h => `
         <tr class="hover:bg-slate-50">
           <td class="px-3 py-2 text-slate-500">${h.time}</td>
+          <td class="px-3 py-2 font-semibold text-indigo-700">${h.customer}</td>
           <td class="px-3 py-2 font-mono font-semibold text-slate-800">${h.po}</td>
           <td class="px-3 py-2 text-slate-500">${h.file}</td>
           <td class="px-3 py-2">${h.total} SKU</td>
@@ -1544,7 +1461,6 @@
           status: String(r["Status"] || r["Trạng thái"] || "ON").trim().toUpperCase()
         })).filter(r => r.barcode);
 
-        // Merge or replace
         MASTER_PRODUCTS = importedList;
         persistMasterProducts();
         renderFullMasterTable();
@@ -1568,46 +1484,55 @@
       renderFullMasterTable();
       renderCustomerTable();
       renderAccountTable();
+      populateCustomerDropdowns();
       if (window.lucide) lucide.createIcons();
     });
     renderFullMasterTable();
     renderCustomerTable();
     renderAccountTable();
+    populateCustomerDropdowns();
     if (window.lucide) lucide.createIcons();
 
     function scanNewItemsFromHistory() {
       renderDataNewItemsTable();
-      alert("Đã quét thành công lịch sử trích xuất PO!");
+      alert("Đã quét thành công dữ liệu mã hàng mới theo khách hàng!");
     }
 
     function renderDataNewItemsTable() {
       const tbody = document.getElementById("newDataItemsTableBody");
       const countBadge = document.getElementById("newItemsTableCount");
       const sidebarBadge = document.getElementById("sidebarNewItemsCount");
+      const filterCustVal = document.getElementById("filterDataCustomer") ? document.getElementById("filterDataCustomer").value : "ALL";
 
-      if (!extractedData || extractedData.length === 0) {
-        tbody.innerHTML = `<tr><td class="px-4 py-3 text-slate-400 italic" colspan="5">Chưa có dữ liệu bóc tách PO nào. Vui lòng tải lên file PO ở tab Xử lý Đơn hàng để hệ thống quét.</td></tr>`;
+      let filteredArchive = globalExtractedArchive;
+      if (filterCustVal && filterCustVal !== "ALL") {
+        filteredArchive = globalExtractedArchive.filter(d => d.customerCode === filterCustVal);
+      }
+
+      if (!filteredArchive || filteredArchive.length === 0) {
+        tbody.innerHTML = `<tr><td class="px-4 py-3 text-slate-400 italic" colspan="6">Chưa có dữ liệu lịch sử bóc tách PO cho khách hàng này. Vui lòng chọn khách hàng và tải lên file PO ở tab Xử lý Đơn hàng.</td></tr>`;
         if (countBadge) countBadge.innerText = "0 mã SKU mới";
-        if (sidebarBadge) sidebarBadge.innerText = "0";
+        if (sidebarBadge) sidebarBadge.innerText = globalExtractedArchive.length;
         return;
       }
 
-      tbody.innerHTML = extractedData.map((d, idx) => `
+      tbody.innerHTML = filteredArchive.map((d, idx) => `
         <tr class="hover:bg-slate-50 transition">
+          <td class="px-4 py-2.5 font-bold text-indigo-900">${d.customerName || d.customerCode}</td>
           <td class="px-4 py-2.5 font-mono font-bold text-slate-800">${d.barcode}</td>
           <td class="px-4 py-2.5 font-semibold text-slate-900">${d.packageName || 'SKU Mới từ PO'}</td>
           <td class="px-4 py-2.5 font-mono text-indigo-700">${d.poNo || 'PO-2026'}</td>
           <td class="px-4 py-2.5 text-center font-bold">${d.quantity}</td>
           <td class="px-4 py-2.5 text-center">
             <span class="px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800 font-semibold text-[11px]">
-              Cấp 1 Tester (Tự động)
+              Cấp 1 Tester (1:1)
             </span>
           </td>
         </tr>
       `).join('');
 
-      if (countBadge) countBadge.innerText = `${extractedData.length} mã SKU`;
-      if (sidebarBadge) sidebarBadge.innerText = extractedData.length;
+      if (countBadge) countBadge.innerText = `${filteredArchive.length} mã SKU`;
+      if (sidebarBadge) sidebarBadge.innerText = globalExtractedArchive.length;
     }
   </script>
 </body>
