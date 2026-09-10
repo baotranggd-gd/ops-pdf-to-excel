@@ -53,7 +53,7 @@
       <button onclick="switchTab('tab-customers')" id="nav-customers" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition group cursor-pointer">
         <i data-lucide="users" class="w-4 h-4 text-slate-400 group-hover:text-white"></i>
         <span>Khách hàng</span>
-        <span class="ml-auto bg-slate-800 text-slate-300 text-[10px] font-semibold px-2 py-0.5 rounded-full" id="sidebarCustCount">3</span>
+        <span class="ml-auto bg-slate-800 text-slate-300 text-[10px] font-semibold px-2 py-0.5 rounded-full" id="sidebarCustCount">4</span>
       </button>
 
       <button onclick="switchTab('tab-master')" id="nav-master" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition group cursor-pointer">
@@ -134,15 +134,19 @@
         <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
           <div>
             <h3 class="text-sm font-semibold text-slate-900">1. Tải lên File Purchase Order (PDF)</h3>
-            <p class="text-xs text-slate-500">Hỗ trợ tự động nhận dạng biểu mẫu Watsons, Guardian, chuỗi bán lẻ và các định dạng PO khác.</p>
+            <p class="text-xs text-slate-500">Hỗ trợ tự động nhận dạng biểu mẫu Watsons, Guardian, TGSF và các định dạng PO khác.</p>
           </div>
-          <div class="flex items-center gap-3">
+          <div class="flex flex-wrap items-center gap-3">
             <button id="btnLoadWatsonsDemo" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold underline flex items-center gap-1 cursor-pointer">
               <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Test PO Watsons (17 items)
             </button>
             <span class="text-slate-300">|</span>
             <button id="btnLoadGuardianDemo" class="text-xs text-emerald-600 hover:text-emerald-800 font-semibold underline flex items-center gap-1 cursor-pointer">
               <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Test PO Guardian (5 items)
+            </button>
+            <span class="text-slate-300">|</span>
+            <button id="btnLoadTGSFDemo" class="text-xs text-amber-600 hover:text-amber-800 font-semibold underline flex items-center gap-1 cursor-pointer">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Test PO TGSF (39 items)
             </button>
           </div>
         </div>
@@ -153,7 +157,7 @@
             <i data-lucide="upload-cloud" class="w-5 h-5"></i>
           </div>
           <p class="text-sm font-semibold text-slate-800">Nhấp để chọn file hoặc kéo thả file Purchase Order (.pdf) vào đây</p>
-          <p class="text-xs text-slate-400 mt-0.5">Hệ thống tự động nhận diện và bóc tách định dạng của Watsons hoặc Guardian</p>
+          <p class="text-xs text-slate-400 mt-0.5">Hệ thống tự động nhận dạng và bóc tách định dạng của Watsons, Guardian, hoặc TGSF</p>
         </div>
 
         <div id="fileListContainer" class="mt-3 hidden">
@@ -479,7 +483,8 @@
 
     let CUSTOMERS = [
       { code: "CUST_WATSONS", name: "CÔNG TY TNHH WATSONS (VIỆT NAM)", address: "Tầng 2, S71, Aeon Tân Phú, 30 Bờ Bao Tân Thắng, P. Tây Thạnh, TP. HCM", poFormat: "Watsons Standard PDF" },
-      { code: "CUST_GUARDIAN", name: "GUARDIAN VIỆT NAM", address: "5901A Z11, Phường Trung Mỹ Tây, Quận 12, TpHCM, Việt Nam", poFormat: "Guardian Standard PDF" },
+      { code: "CUST_GUARDIAN", name: "GUARDIAN VIỆT NAM", address: "5901A Z11, Phường Trung Mỹ Tây, Quận 12, TpHCM", poFormat: "Guardian Standard PDF" },
+      { code: "CUST_TGSF", name: "THẾ GIỚI SKIN FOOD (BLUE OCEAN)", address: "SR 365 LVS Số 363 - 365 Đường Lê Văn Sỹ, Phường Nhiêu Lộc, TP. HCM", poFormat: "TGSF Standard PDF" },
       { code: "CUST_HASAKI", name: "HASAKI BEAUTY & CLINIC", address: "71 Hoàng Hoa Thám, P.13, Q. Tân Bình, TP. HCM", poFormat: "Standard Retail PDF" }
     ];
 
@@ -905,11 +910,26 @@
       });
     });
 
-    // 6. GLOBAL MULTI-PAGE & MULTI-CUSTOMER PDF SCANNER (WATSONS & GUARDIAN)
+    // 6. GLOBAL MULTI-PAGE & MULTI-CUSTOMER PDF SCANNER (WATSONS, GUARDIAN & TGSF)
     function parsePdfContent(fullText, fileName) {
-      const isGuardian = /Mã Đơn Hàng/i.test(fullText) || /Ngày Phân Phối/i.test(fullText) || /guardian/i.test(fullText);
+      const isTGSF = /THEGIOISKIN/i.test(fullText) || /BLUE\s*OCEAN/i.test(fullText) || /TGSF/i.test(fullText);
+      const isGuardian = !isTGSF && (/Mã Đơn Hàng/i.test(fullText) || /Ngày Phân Phối/i.test(fullText) || /guardian/i.test(fullText) || /LIÊN Á CHÂU/i.test(fullText));
 
-      if (isGuardian) {
+      if (isTGSF) {
+        // TGSF PO Header Format
+        const poMatch = fullText.match(/\(PO\s*No\.\):?[\s\r\n]*([^\r\n]+)/i);
+        const expMatch = fullText.match(/\(Last\s*Delivery\s*Date\)[\s\r\n.:]*([0-9]{2}[-/.][0-9]{2}[-/.][0-9]{2,4})/i);
+        const addrMatch = fullText.match(/\(Delivery\s*To\)[\s\r\n.:]*([\s\S]*?)(?=Tel\/Fax:|NCC|\(Vendor\)|$)/i);
+
+        if (poMatch) currentPOHeader.poNumber = poMatch[1].trim();
+        if (expMatch) currentPOHeader.expiredDate = expMatch[1].trim();
+        if (addrMatch) {
+          let raw = addrMatch[1].replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+          currentPOHeader.address = raw.replace(/^[:\s]+/, '');
+        } else {
+          currentPOHeader.address = "SR 365 LVS Số 363 - 365 Đường Lê Văn Sỹ Phường Nhiêu Lộc, TP. HCM";
+        }
+      } else if (isGuardian) {
         // Guardian PO Header Format
         const poMatch = fullText.match(/Mã Đơn Hàng\s*(?:\(PO No\.\))?[\s.:]*([A-Za-z0-9]+)/i);
         const expMatch = fullText.match(/Ngày Phân Phối\s*(?:\(Last Delivery Date\))?[\s.:]*([0-9]{2}[-/.][0-9]{2}[-/.][0-9]{2,4})/i);
@@ -943,13 +963,25 @@
       document.getElementById("poAddressInput").value = currentPOHeader.address || "";
       document.getElementById("poHeaderSection").classList.remove("hidden");
 
-      // Scan all 13-digit Barcodes across the PDF
+      // Scan all 13-digit Barcodes
       const barcodeRegex = /\b(69\d{11}|\d{13})\b/g;
-      const barcodeMatches = [];
+      const rawMatches = [];
       let m;
       while ((m = barcodeRegex.exec(fullText)) !== null) {
-        barcodeMatches.push({ barcode: m[1], index: m.index });
+        rawMatches.push({ barcode: m[1], index: m.index });
       }
+
+      // Filter consecutive duplicates (in TGSF each row has Mã Hàng == Mã Vạch)
+      const barcodeMatches = [];
+      let prevBc = "", prevPos = -999;
+      rawMatches.forEach(item => {
+        if (isTGSF && item.barcode === prevBc && (item.index - prevPos < 60)) {
+          return;
+        }
+        prevBc = item.barcode;
+        prevPos = item.index;
+        barcodeMatches.push(item);
+      });
 
       extractedData = [];
 
@@ -962,10 +994,26 @@
           let qty = 1;
           let amount = 0;
 
-          if (isGuardian) {
+          if (isTGSF) {
+            chunk = chunk.split("TỔNG CỘNG KHO NHẬN")[0];
+            // Qty right before date DD/MM/YYYY
+            const qMatch = chunk.match(/([0-9]{1,3}(?:[,.\s][0-9]{3})+|[0-9]+(?:[,.][0-9]+)?)\s*[\r\n]+\s*[0-9]{2}\/[0-9]{2}\/[0-9]{4}/);
+            if (qMatch) {
+              let qStr = qMatch[1].trim();
+              if (/[,.]00$/.test(qStr)) qStr = qStr.replace(/[,.]00$/, '');
+              qty = parseCleanNumber(qStr);
+            }
+            // Amount top row right after VAT rate %
+            const vatMatch = chunk.match(/[0-9]+(?:\.[0-9]+)?%/);
+            if (vatMatch) {
+              const afterVat = chunk.substring(vatMatch.index + vatMatch[0].length);
+              const amtMatches = afterVat.match(/([0-9]{1,3}(?:[.,][0-9]{3})+|[0-9]+)/g);
+              if (amtMatches && amtMatches.length > 0) {
+                amount = parseCleanNumber(amtMatches[0]);
+              }
+            }
+          } else if (isGuardian) {
             chunk = chunk.split(/TỔNG CỘNG\s*\(GRAND TOTAL\)/i)[0].split(/TỔNG CÔNG/i)[0];
-            
-            // Hỗ trợ số lượng hàng trăm, hàng nghìn, chục nghìn có dấu phẩy/chấm/cách (e.g. 1,200 hoặc 15,000)
             const qMatch1 = chunk.match(/([0-9]{1,3}(?:[,.\s][0-9]{3})+|[0-9]+)\s+(?:[0-9]{2}\/[0-9]{2}\/[0-9]{4})/);
             const qMatch2 = chunk.match(/(?:[0-9]{2}\/[0-9]{2}\/[0-9]{4})\s*[\r\n]+\s*([0-9]{1,3}(?:[,.\s][0-9]{3})+|[0-9]+)\s*[\r\n]+\s*(?:[0-9]{2}\/[0-9]{2}\/[0-9]{4})/);
             
@@ -981,7 +1029,6 @@
             if (afterPos > 0) {
               const afterQ = chunk.substring(afterPos);
               const afterLines = afterQ.split(/[\r\n]+/).map(l => l.trim()).filter(l => l.length > 0);
-              // Lấy giá trị tiền hàng trước VAT (số hàng triệu / trăm nghìn / chục nghìn nằm ngay sau dòng thuế %)
               for (let lIdx = 0; lIdx < afterLines.length; lIdx++) {
                 if (afterLines[lIdx].includes('%') && lIdx + 1 < afterLines.length) {
                   const valStr = afterLines[lIdx + 1];
@@ -993,17 +1040,14 @@
               }
             }
           } else {
-            // Watsons / Standard PO parser: Hỗ trợ số lượng hàng nghìn & thành tiền hàng triệu / tỷ
+            // Watsons / Standard PO parser
             chunk = chunk.split(/Total\s+VND/i)[0];
-            
-            // Qty in PCS: hỗ trợ 15, 340, 1,200, 15,000
             const pcsMatch = chunk.match(/\bPCS\b[\s\r\n]*([0-9]{1,3}(?:[,.\s][0-9]{3})+|[0-9]+)/i) || 
                              chunk.match(/([0-9]{1,3}(?:[,.\s][0-9]{3})+|[0-9]+)[\s\r\n]*\bPCS\b/i);
             if (pcsMatch) {
               qty = parseCleanNumber(pcsMatch[1]);
             }
 
-            // Amount Incl. VAT: hỗ trợ các số hàng nghìn, hàng triệu, hàng trăm triệu (ví dụ: 1,492,506 hoặc 115,162,500)
             const currencyMatches = chunk.match(/\b[0-9]{1,3}(?:[,.][0-9]{3})+\b|\b0\b/g);
             if (currencyMatches && currencyMatches.length > 0) {
               const lastVal = currencyMatches[currencyMatches.length - 1];
@@ -1025,7 +1069,6 @@
           });
         });
       } else {
-        // Universal fallback for general alphanumeric SKU tokens
         const skuRegex = /\b([A-Z]{2,4}[0-9]{2,4}[A-Z0-9]?)\b/gi;
         const matches = fullText.match(skuRegex) || [];
         matches.forEach(code => {
@@ -1106,7 +1149,52 @@
       if (window.lucide) lucide.createIcons();
     }
 
-    // Demo Button
+    // Demo Button (TGSF, Guardian, Watsons)
+    document.getElementById("btnLoadTGSFDemo").addEventListener("click", () => {
+      extractedData = [];
+      currentPOHeader = {
+        poNumber: "PO_MEISHANG _25082026 - LVS",
+        expiredDate: "29/08/2026",
+        address: "SR 365 LVS Số 363 - 365 Đường Lê Văn Sỹ Phường Nhiêu Lộc, TP. HCM"
+      };
+
+      document.getElementById("poNumberInput").value = currentPOHeader.poNumber;
+      document.getElementById("poExpiredDateInput").value = currentPOHeader.expiredDate;
+      document.getElementById("poAddressInput").value = currentPOHeader.address;
+      document.getElementById("poHeaderSection").classList.remove("hidden");
+
+      const tgsfDemoItems = [
+        { barcode: "6977304935229", qty: 5, amount: 466560 },
+        { barcode: "6977304935168", qty: 5, amount: 466560 },
+        { barcode: "6977304930958", qty: 30, amount: 2799360 },
+        { barcode: "6977304933249", qty: 4, amount: 401280 },
+        { barcode: "6977304933232", qty: 3, amount: 300960 },
+        { barcode: "6979009300395", qty: 3, amount: 573120 },
+        { barcode: "6977304932815", qty: 3, amount: 544320 },
+        { barcode: "6977304932822", qty: 10, amount: 1814400 },
+        { barcode: "6975505496631", qty: 10, amount: 650356 },
+        { barcode: "6975505496648", qty: 10, amount: 650356 }
+      ];
+
+      tgsfDemoItems.forEach(d => {
+        const mapped = mapMasterBarcode(d.barcode);
+        extractedData.push({
+          fileName: "PO_MEISHANG _25082026.pdf",
+          barcode: d.barcode,
+          productCode: mapped.item ? (mapped.item.productCode || "") : "",
+          packageName: mapped.item ? mapped.item.name : "",
+          quantity: d.qty,
+          amount: d.amount,
+          status: mapped.status,
+          suggested: mapped.suggested,
+          isDuplicate: false
+        });
+      });
+
+      document.getElementById("stepValidationSection").classList.remove("hidden");
+      renderValidationTable();
+    });
+
     document.getElementById("btnLoadGuardianDemo").addEventListener("click", () => {
       extractedData = [];
       const demoGuardian = [
